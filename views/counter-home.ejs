@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= mode === 'receipts' ? 'รายการรอชำระเงิน' : mode === 'tracking' ? 'ติดตามสถานะคำสั่งซื้อ' : 'คำสั่งซื้อทั้งหมด' %> · พนักงานเคาน์เตอร์</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/order-pages.css">
+  <script src="/table-pagination.js" defer></script>
+  <script src="/live-updates.js" defer></script>
+  <%- include('partials/fonts') %>
+</head>
+<body class="order-page">
+  <header class="order-nav">
+    <a class="back-link" href="/employee/counter">← <span>กลับหน้าหลักพนักงาน</span></a>
+    <strong>งานพนักงานเคาน์เตอร์</strong>
+    <a class="back-link" href="/check-order-status">ตรวจสอบสถานะ</a>
+  </header>
+  <main class="queue-main" data-live-region="employee-counter-queue">
+    <div class="queue-heading">
+      <div>
+        <h1><%= mode === 'receipts' ? 'รายการแจ้งชำระเงินแล้ว' : mode === 'tracking' ? 'ติดตามสถานะคำสั่งซื้อ' : 'คำสั่งซื้อทั้งหมด' %></h1>
+        <p>
+          <% if (mode === 'receipts') { %>
+            ตรวจสอบยอดที่ลูกค้าแจ้งชำระ ก่อนยืนยันและออกใบเสร็จ
+          <% } else if (mode === 'tracking') { %>
+            ออเดอร์ที่ยังไม่ส่งมอบหรือยังไม่รับสินค้าที่ร้าน
+          <% } else { %>
+            ตรวจสอบรายละเอียด การชำระเงิน และสถานะของทุกออเดอร์
+          <% } %>
+          </p>
+      </div>
+      <span class="queue-count"><%= orders.length %> รายการ</span>
+    </div>
+    <section class="queue-card">
+      <% if (orders.length) { %>
+        <div class="table-scroll"><table class="queue-table">
+          <thead><tr><th>เลขที่ออเดอร์</th><th>ลูกค้า</th><th>เวลาที่สั่ง</th><th>วันรับสินค้า</th><th>การชำระเงิน</th><th>สถานะออเดอร์</th><th></th></tr></thead>
+          <tbody><% orders.forEach((order) => { %>
+            <tr
+              class="clickable-row"
+              data-href="/employee/counter/orders/<%= encodeURIComponent(order.order_ID) %>"
+              tabindex="0"
+              aria-label="เปิดรายละเอียดคำสั่งซื้อ <%= order.order_ID %>">
+              <td class="queue-order-id"><%= order.order_ID %></td>
+              <td><%= order.customer_name %><small><%= order.customer_phone_number %></small></td>
+              <td><%= order.order_date %></td>
+              <td><%= order.pickup_deliv_date %></td>
+              <td>
+                <span class="queue-status <%= order.payment_status === 'ชำระแล้ว' ? 'payment-paid' : 'payment-pending' %>">
+                <%= order.payment_status || 'ไม่มีข้อมูลชำระ' %>
+                </span>
+                </td>
+              <td><%- include('partials/order-status', { status: order.order_status, extraClass: 'queue-status' }) %></td>
+              <td class="queue-open"><%= mode === 'receipts' ? 'ตรวจสอบ / ออกใบเสร็จ →' : mode === 'tracking' ? 'ติดตามสถานะ →' : 'ดูรายละเอียด →' %></td>
+            </tr>
+          <% }) %></tbody>
+        </table></div>
+      <% } else { %>
+        <div class="queue-empty">
+          <h2><%= mode === 'receipts' ? 'ไม่มีรายการแจ้งชำระเงิน' : mode === 'tracking' ? 'ไม่มีออเดอร์ที่ต้องติดตาม' : 'ยังไม่มีคำสั่งซื้อ' %></h2>
+          <p>
+            <% if (mode === 'receipts') { %>
+              คำสั่งซื้อจะแสดงที่นี่หลังลูกค้ากดแจ้งชำระเงิน
+            <% } else if (mode === 'tracking') { %>
+              ออเดอร์ที่ยังอยู่ระหว่างดำเนินการจะแสดงที่นี่
+            <% } else { %>
+              รายการจากลูกค้าจะแสดงที่นี่
+            <% } %>
+            </p>
+        </div>
+      <% } %>
+    </section>
+  </main>
+  <script>
+    document.addEventListener('click', (event) => {
+      const row = event.target.closest('.clickable-row');
+      if (row) window.location.assign(row.dataset.href);
+    });
+    document.addEventListener('keydown', (event) => {
+      const row = event.target.closest('.clickable-row');
+      if (row && (event.key === 'Enter' || event.key === ' ')) {
+        event.preventDefault();
+        window.location.assign(row.dataset.href);
+      }
+    });
+  </script>
+</body>
+</html>

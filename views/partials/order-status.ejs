@@ -1,0 +1,11 @@
+<%
+  const statusClass = {
+    'รอจัด': 'status-waiting',
+    'กำลังจัดช่อ': 'status-preparing',
+    'จัดเสร็จแล้ว': 'status-ready',
+    'กำลังจัดส่ง': 'status-shipping',
+    'ส่งมอบเรียบร้อย': 'status-delivered',
+    'รับสินค้าที่ร้านแล้ว': 'status-delivered',
+  }[status] || 'status-unknown';
+%>
+<span class="order-status <%= statusClass %> <%= extraClass || '' %>"><%= status %></span>

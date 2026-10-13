@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ตะกร้าสินค้า</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #FFF8E7;
+      --pink: #f4ccd6;
+      --pink-deep: #ec91a9;
+      --green: #b7d8c9;
+      --brown: #5a4220;
+      --text: #2b1d12;
+      --muted: #8a7a68;
+      --line: #ecdfc6;
+      --danger: #e8707f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Prompt', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .container { max-width: 960px; margin: 0 auto; padding: 16px; }
+    h1 { font-size: 28px; font-weight: 600; margin: 8px 0 20px; }
+
+    .layout { display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
+
+    /* ---------- รายการสินค้า ---------- */
+    .list-container {
+      background: #ffffff;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+    .list-head {
+      background: var(--pink);
+      padding: 18px 22px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 6px 16px;
+      padding: 22px 22px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .item:last-child { border-bottom: none; }
+    .item-name { font-size: 18px; font-weight: 600; margin: 0 0 4px; }
+    .item-meta { font-size: 14px; color: #6d5d4b; margin: 2px 0; }
+    .item-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+    .item-price-line { font-size: 14px; color: #4a3b2b; margin: 6px 0; }
+    .qty { font-size: 14px; display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+    .qty-badge {
+      background: var(--green);
+      border-radius: 999px;
+      min-width: 32px;
+      padding: 2px 12px;
+      text-align: center;
+      font-weight: 600;
+    }
+    .item-right { text-align: right; }
+    .item-total { font-size: 21px; font-weight: 600; }
+    .actions { margin-top: 10px; display: flex; gap: 14px; justify-content: flex-end; font-size: 14px; }
+    .actions a, .actions button {
+      background: none;
+      border: none;
+      padding: 0;
+      font-family: inherit;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .actions a { color: #6d5d4b; }
+    .actions button { color: var(--danger); }
+    .actions a:hover, .actions button:hover { text-decoration: underline; }
+    .actions form { margin: 0; }
+
+    .empty { padding: 48px 22px; text-align: center; color: var(--muted); }
+
+    /* ---------- สรุป ---------- */
+    .summary {
+      background: var(--pink);
+      border-radius: 18px;
+      padding: 22px;
+    }
+    .summary h2 { font-size: 18px; font-weight: 600; margin: 0 0 18px; }
+    .row { display: flex; justify-content: space-between; font-size: 14px; margin: 10px 0; color: #4a3b2b; }
+    .row.total {
+      border-top: 1px solid #deb2bd;
+      margin-top: 16px;
+      padding-top: 16px;
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      padding: 14px;
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      margin-top: 14px;
+    }
+    .btn-outline { border: 2px solid var(--brown); color: var(--text); background: transparent; }
+    .btn-primary { border: none; background: var(--pink-deep); color: var(--text); }
+    .btn-primary.disabled { opacity: .5; pointer-events: none; }
+    .btn:hover { filter: brightness(.96); }
+
+    @media (max-width: 760px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>ตะกร้าสินค้า</h1>
+
+    <div class="layout">
+
+      <!-- ==================== รายการสินค้า ==================== -->
+      <section class="list-container">
+
+        <div class="list-head">
+          รายการสินค้า
+        </div>
+
+        <% if (items.length === 0) { %>
+          <div class="empty">
+            ยังไม่มีสินค้าในตะกร้า
+          </div>
+        <% } %>
+
+        <% items.forEach(function (it) { %>
+          <div class="item">
+
+            <div>
+              <h3 class="item-name">
+                <%= it.bouquet_name || 'ช่อดอกไม้สั่งทำ' %>
+              </h3>
+
+              <div class="item-meta">
+                ขนาด <%= it.size %>
+                |
+                <% if (it.card_message) { %>
+                  ข้อความการ์ด: "<%= it.card_message %>"
+                <% } else { %>
+                  ไม่มีการ์ด
+                <% } %>
+              </div>
+
+              <% if (it.note_text) { %>
+                <div class="item-note">
+                  หมายเหตุ: <%= it.note_text %>
+                </div>
+              <% } %>
+
+              <div class="item-price-line">
+                <%= money0(it.price_per_unit) %> บาท / ชิ้น
+                <% if (Number(it.service_fee || 0) > 0) { %>
+                  + ค่าบริการ <%= money0(it.service_fee) %> บาท / ช่อ
+                <% } %>
+              </div>
+
+              <div class="qty">
+                จำนวน
+                <span class="qty-badge">
+                  <%= it.quantity %>
+                </span>
+              </div>
+            </div>
+
+            <div class="item-right">
+              <div class="item-total">
+                <%= money0((Number(it.price_per_unit) + Number(it.service_fee || 0)) * it.quantity) %> บาท
+              </div>
+
+              <div class="actions">
+                <!-- แก้ไขช่อดอกไม้ -->
+                <a href="/bouquet/edit/<%= it.bouquet_ID %>">
+                  แก้ไข
+                </a>
+
+                <!-- ลบสินค้า -->
+                <form
+                  method="POST"
+                  action="/cart/delete/<%= it.bouquet_ID %>"
+                  onsubmit="return confirm('ต้องการลบสินค้านี้ออกจากตะกร้าใช่หรือไม่?');"
+                >
+                  <button type="submit">
+                    ลบสินค้า
+                  </button>
+                </form>
+              </div>
+            </div>
+
+          </div>
+        <% }); %>
+
+      </section>
+
+      <!-- ==================== สรุปรายการสินค้า ==================== -->
+      <aside>
+
+        <div class="summary">
+          <h2>สรุปรายการสินค้า</h2>
+
+          <div class="row">
+            <span>ราคา</span>
+            <span><%= money2(summary.subtotal) %> บาท</span>
+          </div>
+
+          <div class="row">
+            <span>ค่าจัดส่ง</span>
+            <span><%= money2(summary.deliveryFee) %> บาท</span>
+          </div>
+
+          <div class="row total">
+            <span>รวมทั้งหมด</span>
+            <span><%= money2(summary.total) %> บาท</span>
+          </div>
+        </div>
+
+        <!-- เพิ่มสินค้า -->
+        <a class="btn btn-outline" href="/shop">
+          เพิ่มสินค้าในตะกร้า
+        </a>
+
+        <!-- ไปกรอกข้อมูลสั่งซื้อ -->
+        <% if (items.length > 0) { %>
+          <a class="btn btn-primary" href="/inform">
+            สั่งซื้อสินค้า
+          </a>
+        <% } else { %>
+          <span class="btn btn-primary disabled">
+            สั่งซื้อสินค้า
+          </span>
+        <% } %>
+
+      </aside>
+
+    </div>
+
+  </div>
+
+</body>
+</html>

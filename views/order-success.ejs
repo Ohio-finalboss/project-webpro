@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>แจ้งชำระเงินสำเร็จ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="/live-updates.js" defer></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 20px; background: #FFF8E7; color: #2b1d12; font-family: 'Prompt', sans-serif; }
+    .card { width: min(100%, 520px); padding: 34px; border-radius: 22px; background: #fff; box-shadow: 0 12px 38px #5a422015; text-align: center; }
+    .icon { margin: 0 auto 18px; width: 64px; height: 64px; display: grid; place-items: center; border-radius: 50%; background: #f4ccd6; font-size: 30px; }
+    h1 { margin: 0 0 12px; font-size: 25px; }
+    p { line-height: 1.75; color: #6d5d4b; }
+    .order { margin: 22px 0; padding: 15px; border-radius: 14px; background: #faf3e6; }
+    .order strong { display: block; margin-top: 4px; color: #5a4220; overflow-wrap: anywhere; }
+    .state { color: #8a5d00; font-weight: 600; }
+    .confirmed { color: #32704b; }
+    .actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    a { display: inline-block; padding: 11px 18px; border-radius: 999px; background: #718b54; color: #fff; text-decoration: none; }
+    a.secondary { background: #f4ccd6; color: #5a4220; }
+  </style>
+</head>
+<body>
+  <main class="card" data-live-region="customer-order-success">
+    <div class="icon" aria-hidden="true"><%= order.payment_status === 'ชำระแล้ว' ? '✓' : '🌸' %></div>
+    <% if (order.payment_status === 'ชำระแล้ว') { %>
+      <h1>พนักงานเคาน์เตอร์ยืนยันการชำระแล้ว</h1>
+      <p>คำสั่งซื้อของคุณได้รับการยืนยันการชำระเงินแล้ว</p>
+      <p class="state confirmed">สถานะ: ชำระแล้ว</p>
+    <% } else { %>
+      <h1>แจ้งชำระเงินสำเร็จ</h1>
+      <p>กรุณาแจ้งพนักงานเคาน์เตอร์ว่าชำระเงินแล้ว เพื่อให้พนักงานตรวจสอบและยืนยันยอดก่อนออกใบเสร็จ</p>
+      <p class="state">ส่งการแจ้งแล้ว — รอพนักงานเคาน์เตอร์ตรวจสอบ</p>
+    <% } %>
+    <div class="order">เลขที่คำสั่งซื้อ<strong><%= order.order_ID %></strong><p>ยอดรวม <strong><%= Number(order.total_amount || 0).toLocaleString('th-TH') %> บาท</strong></p></div>
+    <div class="actions">
+      <a class="secondary" href="/shop">กลับหน้าสั่งทำช่อ</a>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f7f6f0">
+    <title>ระบบพนักงานหน้าร้าน</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/table-pagination.js" defer></script>
+    <script src="/live-updates.js" defer></script>
+  <%- include('partials/fonts') %>
+</head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="/employee/<%= role %>" aria-label="หน้าหลักพนักงาน">
+          <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+          <span class="brand-copy"><strong>Flower Shop</strong><small>ระบบจัดการหน้าร้าน</small></span>
+        </a>
+
+        <div class="sidebar-label">WORKSPACE</div>
+        <a class="side-link active" href="/employee/<%= role %>">
+          <span class="nav-icon">⌂</span><span>หน้าหลัก</span><span class="active-dot"></span>
+        </a>
+        <a class="side-link" href="<%= role === 'counter' ? '/employee/counter/orders' : '/employee/florist/orders' %>">
+          <span class="nav-icon">▤</span>
+          <span>รายการคำสั่งซื้อ</span>
+          <span class="side-count">
+          <%= stats.orderCount %>
+          </span>
+          </a>
+        <a class="side-link" href="/check-order-status"><span class="nav-icon">✿</span><span>ตรวจสอบสถานะ</span></a>
+        <% if (role === 'counter') { %>
+          <a class="side-link" href="#invoice"><span class="nav-icon">▧</span><span>ใบเสร็จ</span></a>
+        <% } %>
+
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <div class="breadcrumb"><span>Workspace</span><span class="crumb-slash">/</span><strong>หน้าหลัก</strong></div>
+          <div class="topbar-right">
+            <a class="topbar-link" href="/check-order-status">ตรวจสอบสถานะคำสั่งซื้อ</a>
+            <span class="today">
+            <span class="today-dot">
+            </span> หน้าร้านพร้อมให้บริการ</span>
+            </div>
+        </header>
+
+        <div class="page-wrap" data-live-region="employee-dashboard">
+          <section class="welcome-row">
+            <div>
+              <div class="eyebrow"><span class="eyebrow-line"></span> STAFF DASHBOARD</div>
+              <h1><%= role === 'florist' ? 'พนักงานจัดดอกไม้' : 'พนักงานเคาน์เตอร์' %><span class="wave">✿</span></h1>
+              <p class="welcome-sub"><%= role === 'florist' ? '__________________________________' : '__________________________________' %></p>
+            </div>
+            <div class="role-switch" aria-label="เลือกหน้าหลักพนักงาน">
+              <a class="role-option <%= role === 'florist' ? 'selected' : '' %>" href="/employee/florist"><span class="role-icon florist-icon">✿</span><span>จัดดอกไม้</span></a>
+              <a class="role-option <%= role === 'counter' ? 'selected' : '' %>" href="/employee/counter"><span class="role-icon counter-icon">▣</span><span>เคาน์เตอร์</span></a>
+            </div>
+          </section>
+
+          <section class="stats-grid" aria-label="สรุปภาพรวม">
+            <article class="stat-card stat-orders">
+              <div class="stat-top">
+              <span class="stat-icon icon-lilac">▤</span>
+              <span class="stat-caption">ภาพรวม</span>
+              </div>
+              <div class="stat-value">
+              <%= stats.orderCount %>
+              <span>รายการ</span>
+              </div>
+              <div class="stat-foot">
+              <span class="stat-dot dot-lilac">
+              </span> คำสั่งซื้อทั้งหมด</div>
+              <span class="stat-decoration">✳</span>
+              </article>
+            <article class="stat-card">
+              <div class="stat-top">
+              <span class="stat-icon icon-peach">✿</span>
+              <span class="stat-caption">กำลังดำเนินการ</span>
+              </div>
+              <div class="stat-value">
+              <%= stats.waitingOrders %>
+              <span>รายการ</span>
+              </div>
+              <div class="stat-foot">
+              <span class="stat-dot dot-peach">
+              </span> รายการที่ยังต้องจัด</div>
+              <span class="stat-decoration flower-decoration">❋</span>
+              </article>
+            <article class="stat-card">
+              <div class="stat-top">
+              <span class="stat-icon icon-green">▧</span>
+              <span class="stat-caption">สำหรับเคาน์เตอร์</span>
+              </div>
+              <div class="stat-value">
+              <%= stats.invoiceCount %>
+              <span>รายการ</span>
+              </div>
+              <div class="stat-foot">
+              <span class="stat-dot dot-green">
+              </span> รอออกใบเสร็จ</div>
+              <span class="stat-decoration receipt-decoration">▧</span>
+              </article>
+          </section>
+
+          <section class="action-grid" aria-label="ตัวเลือกการทำงาน">
+            <a class="action-card primary-action" href="<%= role === 'counter' ? '/employee/counter/orders' : '/employee/florist/orders' %>">
+              <div class="action-card-top"><span class="action-icon action-icon-lilac">▤</span><span class="arrow-circle">↗</span></div>
+              <span class="action-kicker">ORDER OVERVIEW</span>
+              <h3>ดูคำสั่งซื้อทั้งหมด</h3>
+              <p>ติดตามคำสั่งซื้อทั้งหมดและเปิดดูรายละเอียดของแต่ละออเดอร์</p>
+              <div class="action-meta"><span class="mini-dot"></span><%= stats.orderCount %> รายการในระบบ<span class="meta-arrow">→</span></div>
+            </a>
+            <a class="action-card secondary-action" href="<%= role === 'counter' ? '/employee/counter/tracking' : '/employee/florist/progress' %>">
+              <div class="action-card-top"><span class="action-icon action-icon-peach"><%= role === 'florist' ? '✿' : '↻' %></span><span class="arrow-circle">↗</span></div>
+              <span class="action-kicker"><%= role === 'florist' ? 'UPDATE PROGRESS' : 'ORDER STATUS' %></span>
+              <h3><%= role === 'florist' ? 'อัปเดตสถานะคำสั่งซื้อ' : 'ติดตามสถานะคำสั่งซื้อ' %></h3>
+              <p><%= role === 'florist' ? 'แสดงออเดอร์ที่ชำระแล้วและอยู่ในสถานะรอจัดหรือกำลังจัดช่อ' : 'ดูความคืบหน้าการจัดช่อและเตรียมส่งมอบให้ลูกค้า' %></p>
+              <div class="action-meta"><span class="mini-dot peach-dot"></span><%= stats.waitingOrders %> รายการที่ยังต้องจัด<span class="meta-arrow">→</span></div>
+            </a>
+            <% if (role === 'counter') { %>
+              <a class="action-card invoice-action" id="invoice" href="/employee/counter/receipts">
+                <div class="action-card-top"><span class="action-icon action-icon-green">▧</span><span class="arrow-circle">↗</span></div>
+                <span class="action-kicker">PAYMENT & RECEIPT</span>
+                <h3>ออกใบเสร็จ</h3>
+                <p>ตรวจสอบยอดชำระและเตรียมใบเสร็จให้ลูกค้า</p>
+                <div class="action-meta"><span class="mini-dot green-dot"></span><%= stats.invoiceCount %> รายการรอออกใบเสร็จ<span class="meta-arrow">→</span></div>
+              </a>
+            <% } %>
+          </section>
+
+          <section class="orders-panel" id="orders">
+            <div class="panel-heading">
+              <div>
+              <div class="eyebrow">
+              <span class="eyebrow-line">
+              </span> RECENT ACTIVITY</div>
+              <h2>คำสั่งซื้อล่าสุด</h2>
+              </div>
+              <a class="view-all" href="<%= role === 'counter' ? '/employee/counter/orders' : '/employee/florist/orders' %>">ดูทั้งหมด <span>→</span>
+              </a>
+              </div>
+            <% if (recentOrders.length) { %>
+              <div class="table-wrap"><table><thead><tr><th>เลขที่คำสั่งซื้อ</th><th>ชื่อลูกค้า</th><th>วันรับสินค้า</th><th>สถานะ</th><th></th></tr></thead><tbody>
+                <% recentOrders.forEach((order) => { %>
+                  <tr
+                    class="clickable-row"
+                    data-href="/employee/<%= role %>/orders/<%= encodeURIComponent(order.order_ID) %>"
+                    tabindex="0"
+                    aria-label="เปิดรายละเอียดคำสั่งซื้อ <%= order.order_ID %>">
+                    <td class="order-number">
+                    <span class="order-flower">✿</span>
+                    <%= order.order_ID %>
+                    </td>
+                    <td>
+                    <%= order.customer_name %>
+                    </td>
+                    <td>
+                    <%= order.pickup_deliv_date %>
+                    </td>
+                    <td>
+                    <%- include('partials/order-status', { status: order.order_status, extraClass: 'status-pill' }) %>
+                    </td>
+                    <td class="row-arrow">↗</td>
+                    </tr>
+                <% }) %>
+              </tbody></table></div>
+            <% } else { %>
+              <div class="empty-state">
+                <div class="empty-art">
+                <span class="empty-sun">✳</span>
+                <span class="empty-vase">⌒</span>
+                <span class="empty-stem stem-one">╱</span>
+                <span class="empty-stem stem-two">╲</span>
+                <span class="empty-bloom">✿</span>
+                </div>
+                <h3>ยังไม่มีคำสั่งซื้อในตอนนี้</h3>
+                <p>เมื่อมีรายการสั่งซื้อจากลูกค้า รายการจะแสดงที่นี่โดยอัตโนมัติ</p>
+                </div>
+            <% } %>
+          <div class="panel-footer"><span>ข้อมูลจากฐานข้อมูลร้าน</span><span class="sync-label"><span></span> เชื่อมต่อฐานข้อมูลแล้ว</span></div>
+          </section>
+
+          <section class="orders-panel" id="completed-orders">
+            <div class="panel-heading">
+              <div>
+              <div class="eyebrow">
+              <span class="eyebrow-line">
+              </span> COMPLETED ORDERS</div>
+              <h2>คำสั่งซื้อที่สำเร็จแล้ว</h2>
+              </div>
+              <span class="queue-count">
+              <%= completedOrders.length %> รายการ</span>
+              </div>
+            <% if (completedOrders.length) { %>
+              <div class="table-wrap"><table><thead><tr><th>เลขที่คำสั่งซื้อ</th><th>ชื่อลูกค้า</th><th>วันรับสินค้า</th><th>สถานะ</th><th></th></tr></thead><tbody>
+                <% completedOrders.forEach((order) => { %>
+                  <tr
+                    class="clickable-row"
+                    data-href="/employee/<%= role %>/orders/<%= encodeURIComponent(order.order_ID) %>"
+                    tabindex="0"
+                    aria-label="เปิดรายละเอียดคำสั่งซื้อ <%= order.order_ID %>">
+                    <td class="order-number">
+                    <span class="order-flower">✿</span>
+                    <%= order.order_ID %>
+                    </td>
+                    <td>
+                    <%= order.customer_name %>
+                    </td>
+                    <td>
+                    <%= order.pickup_deliv_date %>
+                    </td>
+                    <td>
+                    <%- include('partials/order-status', { status: order.order_status, extraClass: 'status-pill' }) %>
+                    </td>
+                    <td class="row-arrow">↗</td>
+                    </tr>
+                <% }) %>
+              </tbody></table></div>
+            <% } else { %>
+              <div class="empty-state"><h3>ยังไม่มีคำสั่งซื้อที่สำเร็จ</h3><p>รายการจะแสดงที่นี่เมื่อส่งมอบสินค้าให้ลูกค้าแล้ว</p></div>
+            <% } %>
+          </section>
+
+          <% if (role === 'counter') { %>
+            <div class="invoice-anchor" id="invoice-preview">
+              <span>▧</span>
+              <div>
+              <strong>ใบเสร็จ</strong>
+              <small>เมื่อมีรายการรอชำระ ระบบจะแสดงคำสั่งซื้อที่ออกใบเสร็จได้ในส่วนนี้</small>
+              </div>
+              <span class="invoice-count">
+              <%= stats.invoiceCount %> รายการ</span>
+              </div>
+          <% } %>
+
+        </div>
+      </main>
+    </div>
+    <script>
+      document.addEventListener('click', (event) => {
+        const row = event.target.closest('.clickable-row');
+        if (row) window.location.assign(row.dataset.href);
+      });
+      document.addEventListener('keydown', (event) => {
+        const row = event.target.closest('.clickable-row');
+        if (row && (event.key === 'Enter' || event.key === ' ')) {
+          event.preventDefault();
+          window.location.assign(row.dataset.href);
+        }
+      });
+    </script>
+  </body>
+</html>

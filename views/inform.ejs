@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>กรอกข้อมูลติดต่อและการรับสินค้า</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/customer-nav.css">
+  <style>
+    :root {
+      --bg: #FFF8E7;
+      --pink-bar: #fbe1e7;
+      --pink-border: #efb7c4;
+      --pink-text: #b34868;
+      --green: #718b54;
+      --gray-btn: #e4d8d4;
+      --text: #2b1d12;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Prompt', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .container { max-width: 720px; margin: 0 auto; padding: 24px 20px 40px; }
+    h1 { font-size: 26px; font-weight: 600; margin: 4px 0 18px; }
+    .card {
+       background: white;
+       padding: 25px;
+       border-radius: 25px;
+       box-shadow: 1px 1px 10px 4px #e4deda
+    }
+    .section-title {
+      background: var(--pink-bar);
+      color: var(--pink-text);
+      font-weight: 600;
+      font-size: 17px;
+      padding: 12px 18px;
+      border-radius: 999px;
+      margin: 18px 0 14px;
+    }
+    label { display: block; font-weight: 500; font-size: 15px; margin: 14px 0 6px; }
+    label .req { color: #c0392b; }
+    input[type=text], input[type=tel], input[type=date], input[type=time], textarea {
+      width: 100%;
+      font-family: inherit;
+      font-size: 15px;
+      padding: 11px 16px;
+      border: 1px solid var(--pink-border);
+      border-radius: 14px;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+    }
+    input:focus, textarea:focus { border-color: var(--pink-text); box-shadow: 0 0 0 3px rgba(179, 72, 104, .12); }
+    input::placeholder, textarea::placeholder { color: #bdb3ad; }
+    textarea { min-height: 84px; resize: vertical; }
+
+    /* ตัวเลือกรูปแบบการรับสินค้า */
+    .radios { display: flex; gap: 22px; flex-wrap: wrap; margin: 6px 0 14px; padding-left: 4px; }
+    .radios label {
+      display: flex; align-items: center; gap: 8px;
+      margin: 0; cursor: pointer; font-weight: 500;
+    }
+    .radios input { accent-color: var(--pink-text); width: 18px; height: 18px; margin: 0; }
+
+    .delivery-box {
+      background: var(--pink-bar);
+      border-radius: 18px;
+      padding: 8px 18px 20px;
+    }
+    .delivery-box h3 { color: var(--pink-text); font-size: 15px; font-weight: 600; margin: 12px 0 0; }
+    .hidden { display: none; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    .error {
+      background: #fde4e1;
+      border: 1px solid #f3b3ab;
+      color: #a1281b;
+      padding: 12px 16px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    .buttons { display: grid; grid-template-columns: 1fr 1.2fr; gap: 14px; margin-top: 30px; }
+    .btn {
+      display: block; text-align: center; text-decoration: none; border: none; cursor: pointer;
+      padding: 15px; border-radius: 999px;
+      font-family: inherit; font-size: 16px; font-weight: 600;
+    }
+    .btn-back { background: var(--gray-btn); color: var(--text); }
+    .btn-confirm { background: var(--green); color: #fff; }
+    .btn:hover { filter: brightness(.95); }
+
+    @media (max-width: 480px) {
+      .two-col { grid-template-columns: 1fr; gap: 0; }
+    }
+  </style>
+</head>
+<body>
+  <%- include('partials/customer-nav', { active: 'order' }) %>
+  <div class="container">
+    <div class="card">
+      <h1>กรอกข้อมูลติดต่อและการรับสินค้า</h1>
+
+      <% if (error) { %>
+        <div class="error"><%= error %></div>
+      <% } %>
+
+      <form method="POST" action="/inform" id="informForm">
+
+        <!-- ===== 1. ข้อมูลติดต่อ ===== -->
+        <div class="section-title">1. ข้อมูลติดต่อ</div>
+
+        <label for="customerName">ชื่อผู้สั่งซื้อ <span class="req">*</span></label>
+        <input type="text" id="customerName" name="customerName" required maxlength="100"
+               placeholder="เช่น นางสาวมรกต ใจดี" value="<%= form.customerName || '' %>">
+
+        <label for="phone">เบอร์โทรศัพท์ <span class="req">*</span></label>
+        <input type="tel" id="phone" name="phone" required maxlength="20"
+               pattern="[0-9\s\-]{9,15}" title="กรอกเบอร์โทรศัพท์เป็นตัวเลข เช่น 081 234 5678"
+               placeholder="เช่น 081 234 5678" value="<%= form.phone || '' %>">
+
+        <!-- ===== 2. รูปแบบการรับสินค้า ===== -->
+        <div class="section-title">2. รูปแบบการรับสินค้า</div>
+
+        <div class="radios">
+          <label>
+            <input type="radio" name="fulfillment" value="delivery"
+                   <%= (form.fulfillment || 'delivery') === 'delivery' ? 'checked' : '' %>>
+            จัดส่งตามที่อยู่ (Grab / Line Man)
+          </label>
+          <label>
+            <input type="radio" name="fulfillment" value="pickup"
+                   <%= form.fulfillment === 'pickup' ? 'checked' : '' %>>
+            รับที่หน้าร้าน
+          </label>
+        </div>
+
+        <div class="delivery-box" id="deliveryBox">
+          <h3>ข้อมูลผู้รับสำหรับการจัดส่ง</h3>
+
+          <label for="recipientName">ชื่อผู้รับ <span class="req">*</span></label>
+          <input type="text" id="recipientName" name="recipientName" maxlength="100"
+                 placeholder="เช่น นางสาวมรกต ใจดี" value="<%= form.recipientName || '' %>">
+
+          <label for="address">ที่อยู่จัดส่ง <span class="req">*</span></label>
+          <textarea id="address" name="address" maxlength="300"
+                    placeholder="เช่น 123/45 ถนนพหลโยธิน แขวงจตุจักร เขตจตุจักร กรุงเทพฯ 10900"><%= form.address || '' %></textarea>
+        </div>
+
+        <!-- ===== 3. วันและเวลาที่ต้องการรับ ===== -->
+        <div class="section-title">3. วันและเวลาที่ต้องการรับ</div>
+
+        <div class="two-col">
+          <div>
+            <label for="date">วันที่ <span class="req">*</span></label>
+            <input type="date" id="date" name="date" required min="<%= today %>" value="<%= form.date || '' %>">
+          </div>
+          <div>
+            <label for="time">เวลาที่รับ <span class="req">*</span></label>
+            <input type="time" id="time" name="time" required value="<%= form.time || '' %>">
+        </div>
+      </div>
+
+      <!-- ===== ปุ่ม ===== -->
+      <div class="buttons">
+        <a class="btn btn-back" href="/cart">ย้อนกลับไปตะกร้าสินค้า</a>
+        <button type="submit" class="btn btn-confirm">ยืนยันข้อมูล</button>
+      </div>
+    </form>
+    </div>
+  </div>
+
+  <script>
+    // แสดง/ซ่อนช่องข้อมูลผู้รับ ตามรูปแบบการรับสินค้า
+    (function () {
+      var radios = document.querySelectorAll('input[name="fulfillment"]');
+      var box = document.getElementById('deliveryBox');
+      var recipient = document.getElementById('recipientName');
+      var address = document.getElementById('address');
+
+      function update() {
+        var isDelivery = document.querySelector('input[name="fulfillment"]:checked').value === 'delivery';
+        box.classList.toggle('hidden', !isDelivery);
+        // ช่องที่ซ่อนอยู่ต้องไม่ required ไม่เช่นนั้นฟอร์มจะส่งไม่ได้
+        recipient.required = isDelivery;
+        address.required = isDelivery;
+      }
+
+      radios.forEach(function (r) { r.addEventListener('change', update); });
+      update();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ใบเสร็จ <%= order.receipt_number || order.order_ID %></title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/order-pages.css">
+    <%- include('partials/fonts') %>
+    <style>
+      .receipt-card {
+        max-width: 820px;
+        margin: 0 auto 40px;
+        padding: 34px;
+        background: #fff;
+        color: #30251d;
+        border: 1px solid #e8dfd4;
+        border-radius: 16px;
+        box-shadow: 0 12px 36px #32200d12;
+      }
+      .receipt-heading { padding-bottom: 18px; text-align: center; border-bottom: 2px solid #5a4220; }
+      .receipt-heading h1 { margin: 0; font-size: 30px; }
+      .receipt-heading p { margin: 0 0 5px; color: #718b54; font-weight: 600; }
+      .receipt-heading span { display: inline-block; margin-top: 6px; color: #766858; }
+      .receipt-info { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 26px; margin: 22px 0 28px; }
+      .receipt-info p { display: flex; justify-content: space-between; gap: 12px; margin: 0; padding-bottom: 6px; border-bottom: 1px dotted #dfd4c7; }
+      .receipt-info span { color: #766858; flex: 0 0 auto; }
+      .receipt-info strong { text-align: right; overflow-wrap: anywhere; }
+      .receipt-items { display: grid; gap: 14px; }
+      .receipt-item { padding: 16px 18px; border: 1px solid #e8dfd4; border-radius: 12px; break-inside: avoid; }
+      .receipt-item-head { display: flex; justify-content: space-between; gap: 12px; padding-bottom: 10px; border-bottom: 1px solid #eee7df; }
+      .receipt-item-head strong { font-size: 17px; }
+      .receipt-item-head span { color: #766858; white-space: nowrap; }
+      .selected-list { margin: 10px 0 0; padding: 0; list-style: none; }
+      .selected-list li { display: flex; justify-content: space-between; gap: 16px; padding: 4px 0; }
+      .selected-list li span:last-child { color: #766858; white-space: nowrap; }
+      .receipt-item-price { display: flex; justify-content: space-between; gap: 12px; margin-top: 10px; padding-top: 9px; border-top: 1px dashed #dfd4c7; }
+      .receipt-summary { width: min(100%, 390px); margin: 22px 0 0 auto; }
+      .receipt-summary p { display: flex; justify-content: space-between; gap: 16px; margin: 0; padding: 6px 0; }
+      .receipt-summary .grand-total { margin-top: 8px; padding-top: 13px; border-top: 2px solid #5a4220; font-size: 20px; font-weight: 600; }
+      .receipt-qr { display: grid; justify-items: center; gap: 8px; margin: 24px auto 0; color: #766858; text-align: center; }
+      .receipt-qr img { width: 150px; height: 150px; }
+      @media (max-width: 600px) {
+        .receipt-card { padding: 22px 16px; }
+        .receipt-info { grid-template-columns: 1fr; gap: 7px; }
+        .receipt-item { padding: 14px 12px; }
+        .receipt-item-head { align-items: flex-start; }
+      }
+      @media print {
+        body.order-page { background: #fff !important; }
+        .order-nav { display: none !important; }
+        .queue-main { width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
+        .receipt-card { max-width: none; margin: 0; padding: 0; border: 0; border-radius: 0; box-shadow: none; }
+      }
+    </style>
+  </head>
+  <body class="order-page">
+    <header class="order-nav">
+      <a class="back-link" href="/employee/counter/orders">← <span>กลับรายการคำสั่งซื้อ</span>
+      </a>
+      <strong>ตัวอย่างใบเสร็จ</strong>
+      <button class="status-button" onclick="window.print()">พิมพ์ใบเสร็จ</button>
+      </header>
+    <main class="queue-main">
+      <article class="receipt-card">
+        <% if (order.payment_status !== 'ชำระแล้ว') { %>
+          <div class="queue-empty"><h2>ยังออกใบเสร็จไม่ได้</h2><p>กรุณายืนยันการชำระเงินก่อน</p></div>
+        <% } else { %>
+          <div class="receipt-heading">
+            <p>Flower Shop</p>
+            <h1>ใบเสร็จรับเงิน</h1>
+            <span>เลขที่ใบเสร็จ <%= order.receipt_number %></span>
+          </div>
+
+          <section class="receipt-info" aria-label="รายละเอียดลูกค้าและคำสั่งซื้อ">
+            <p><span>เลขที่คำสั่งซื้อ</span><strong><%= order.order_ID %></strong></p>
+            <p><span>ชื่อลูกค้า</span><strong><%= order.customer_name %></strong></p>
+            <p><span>เบอร์โทรศัพท์</span><strong><%= order.customer_phone_number %></strong></p>
+            <p><span>วิธีรับสินค้า</span><strong><%= order.fulfillment_type || (order.delivery_address ? 'จัดส่ง' : 'รับที่ร้าน') %></strong></p>
+            <% if (order.recipient_name) { %><p><span>ชื่อผู้รับ</span><strong><%= order.recipient_name %></strong></p><% } %>
+            <% if (order.delivery_address) { %><p><span>ที่อยู่จัดส่ง</span><strong><%= order.delivery_address %></strong></p><% } %>
+            <p><span>วันรับสินค้า</span><strong><%= order.pickup_deliv_date %></strong></p>
+            <p><span>ช่องทางชำระ</span><strong><%= order.payment_method %></strong></p>
+            <p><span>วันที่ชำระ</span><strong><%= order.payment_date %></strong></p>
+          </section>
+
+          <% const bouquetSubtotal = bouquets.reduce((sum, b) => sum + Number(b.price_per_unit || 0) * Number(b.quantity || 0), 0); %>
+          <% const serviceTotal = bouquets.reduce((sum, b) => sum + Number(b.service_fee || 0) * Number(b.quantity || 0), 0); %>
+          <section class="receipt-items" aria-label="รายการสินค้าที่เลือก">
+            <% bouquets.forEach((bouquet, index) => { %>
+              <div class="receipt-item">
+                <div class="receipt-item-head">
+                  <div><strong>รายการ <%= index + 1 %>: <%= bouquet.bouquet_name || 'ช่อดอกไม้' %></strong><div>ขนาด <%= bouquet.size || '-' %></div></div>
+                  <span>จำนวน <%= bouquet.quantity %> ช่อ</span>
+                </div>
+                <ul class="selected-list">
+                  <% (bouquet.item_summary || '').split(', ').filter(Boolean).forEach((entry) => { %>
+                    <% const separator = entry.lastIndexOf(' × '); %>
+                    <% const itemName = separator >= 0 ? entry.slice(0, separator) : entry; %>
+                    <% const itemQuantity = separator >= 0 ? entry.slice(separator + 3) : ''; %>
+                    <li><span>– <%= itemName %></span><span>จำนวน <%= itemQuantity %></span></li>
+                  <% }) %>
+                  <% if (!bouquet.item_summary) { %><li><span>– ไม่มีรายละเอียดรายการสินค้า</span></li><% } %>
+                </ul>
+                <div class="receipt-item-price">
+                  <span>ราคาช่อรวม</span>
+                  <strong>
+                  <%= (Number(bouquet.price_per_unit || 0) * Number(bouquet.quantity || 0)).toLocaleString('th-TH') %> บาท</strong>
+                  </div>
+              </div>
+            <% }) %>
+          </section>
+
+          <section class="receipt-summary" aria-label="สรุปยอดชำระ">
+            <p><span>รวมราคาช่อ</span><strong><%= bouquetSubtotal.toLocaleString('th-TH') %> บาท</strong></p>
+            <p><span>ค่าบริการ</span><strong><%= serviceTotal.toLocaleString('th-TH') %> บาท</strong></p>
+            <p><span>ค่าส่ง</span><strong><%= Number(order.delivery_fee || 0).toLocaleString('th-TH') %> บาท</strong></p>
+            <p class="grand-total"><span>รวมชำระแล้ว</span><strong><%= Number(order.amount || order.total_amount || 0).toLocaleString('th-TH') %> บาท</strong></p>
+          </section>
+
+          <% if (qrUrl) { %><div class="receipt-qr"><img src="<%= qrUrl %>" alt="QR สำหรับติดตามสถานะคำสั่งซื้อ"><span>สแกน QR Code เพื่อติดตามสถานะคำสั่งซื้อ</span></div><% } %>
+        <% } %>
+      </article>
+    </main>
+  </body>
+</html>

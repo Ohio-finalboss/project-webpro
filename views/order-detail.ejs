@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>รายละเอียดออเดอร์ <%= order.order_ID %></title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/order-pages.css">
+    <script src="/live-updates.js" defer></script>
+  <%- include('partials/fonts') %>
+</head>
+  <body class="detail-page">
+    <header class="order-nav detail-nav">
+      <a class="back-link" href="<%= role === 'counter' ? '/employee/counter/orders' : '/employee/florist/orders' %>">← <span>ย้อนกลับ</span></a>
+      <span class="nav-spacer"></span>
+    </header>
+    <main class="detail-main" data-live-region="employee-order-detail">
+      <article class="detail-card">
+        <div class="detail-title-row">
+          <div><p class="detail-eyebrow">รายละเอียดคำสั่งซื้อ</p><h1><%= order.order_ID %></h1></div>
+          <%- include('partials/order-status', { status: order.order_status, extraClass: 'detail-status' }) %>
+        </div>
+        <div class="detail-meta">
+          <span>สั่งเมื่อ <strong>
+          <%= order.order_date %>
+          </strong>
+          </span>
+          <span>กำหนดรับ <strong>
+          <%= order.pickup_deliv_date %>
+          </strong>
+          </span>
+          <span>วิธีรับสินค้า <strong>
+          <%= order.fulfillment_type || (order.delivery_address ? 'จัดส่ง' : 'รับที่ร้าน') %>
+          </strong>
+          </span>
+          </div>
+
+        <section class="detail-section">
+          <h2>ข้อมูลลูกค้า</h2>
+          <div class="customer-grid">
+            <div><span>ชื่อลูกค้า</span><strong><%= order.customer_name %></strong></div>
+            <div><span>เบอร์โทรศัพท์</span><strong><%= order.customer_phone_number %></strong></div>
+            <% if (order.recipient_name) { %><div><span>ชื่อผู้รับ</span><strong><%= order.recipient_name %></strong></div><% } %>
+            <% if (order.delivery_address) { %><div class="address-field"><span>ที่อยู่จัดส่ง</span><strong><%= order.delivery_address %></strong></div><% } %>
+          </div>
+        </section>
+
+        <% if (role === 'counter') { %>
+          <section class="detail-section payment-detail">
+            <h2>ข้อมูลการชำระเงิน</h2>
+            <div class="customer-grid">
+              <div>
+              <span>ยอดชำระ</span>
+              <strong>
+              <%= Number(order.amount || 0).toLocaleString('th-TH') %> บาท</strong>
+              </div>
+              <div>
+              <span>ช่องทางชำระ</span>
+              <strong>
+              <%= order.payment_method || '-' %>
+              </strong>
+              </div>
+              <div>
+              <span>สถานะชำระเงิน</span>
+              <strong>
+              <%= order.payment_status || 'ยังไม่มีข้อมูล' %>
+              </strong>
+              </div>
+              <% if (order.payment_date) { %>
+              <div>
+              <span>วันที่ชำระ</span>
+              <strong>
+              <%= order.payment_date %>
+              </strong>
+              </div>
+              <% } %>
+              </div>
+            <% if (order.payment_status === 'ชำระแล้ว') { %>
+              <a class="counter-receipt-link" href="/employee/counter/receipt/<%= encodeURIComponent(order.order_ID) %>">ดูใบเสร็จ <%= order.receipt_number || '' %> →</a>
+              <% } else if (order.payment_status === 'แจ้งชำระเงินแล้ว') { %>
+              <form method="post" action="/employee/counter/orders/<%= encodeURIComponent(order.order_ID) %>/payment">
+              <button class="status-button start-button" type="submit">ตรวจสอบและยืนยันการชำระเงิน</button>
+              </form>
+              <% } else { %>
+              <p>รอลูกค้าชำระเงินและแจ้งพนักงานเคาน์เตอร์</p>
+              <% } %>
+          </section>
+        <% } %>
+
+        <section class="detail-section product-section">
+          <h2>รายละเอียดช่อดอกไม้</h2>
+          <% if (bouquets.length) { %>
+            <div class="bouquet-list">
+              <% bouquets.forEach((bouquet, index) => { %>
+                <div class="bouquet-item">
+                  <div class="bouquet-heading">
+                    <div>
+                    <span class="bouquet-number">ช่อที่ <%= index + 1 %>
+                    </span>
+                    <h3>
+                    <%= bouquet.bouquet_name || 'ช่อดอกไม้' %>
+                    </h3>
+                    </div>
+                    <span class="bouquet-quantity">จำนวน <%= bouquet.bouquet_quantity %> ช่อ</span>
+                    </div>
+                  <div class="bouquet-specs">
+                    <span>ขนาด <strong>
+                    <%= bouquet.size || '-' %>
+                    </strong>
+                    </span>
+                    <span>ราคาต่อช่อ <strong>
+                    <%= (Number(bouquet.price_per_unit) + Number(bouquet.service_fee || 0)).toLocaleString('th-TH') %> บาท</strong>
+                    </span>
+                    </div>
+                  <% if (bouquet.card_color) { %><div class="bouquet-specs"><span>การ์ด <strong><%= bouquet.card_color %></strong></span></div><% } %>
+                  <% if (bouquet.items.length) { %>
+                    <div class="requested-items">
+                      <span class="subheading">ดอกไม้และวัสดุที่เลือก</span>
+                      <ul>
+                      <% bouquet.items.forEach((item) => { %>
+                      <li>
+                      <span>
+                      <%= item.item_name || 'รายการสินค้า' %>
+                      <% if (item.item_type) { %> <small>(<%= item.item_type %>)</small>
+                      <% } %>
+                      </span>
+                      <strong>
+                      <%= item.quantity %> ชิ้น</strong>
+                      </li>
+                      <% }) %>
+                      </ul>
+                      </div>
+                  <% } %>
+                  <% if (bouquet.card_message) { %><div class="customer-note"><span>ข้อความในการ์ด</span><p><%= bouquet.card_message %></p></div><% } %>
+                  <% if (bouquet.note_text) { %><div class="customer-note"><span>รายละเอียดเพิ่มเติม</span><p><%= bouquet.note_text %></p></div><% } %>
+                  <div class="bouquet-total">รวมช่อนี้ <strong>
+                    <%= ((Number(bouquet.price_per_unit) + Number(bouquet.service_fee || 0)) * Number(bouquet.bouquet_quantity)).toLocaleString('th-TH') %> บาท</strong>
+                    </div>
+                </div>
+              <% }) %>
+            </div>
+            <div class="order-total"><span>ค่าจัดส่ง</span><strong><%= Number(order.delivery_fee || 0).toLocaleString('th-TH') %> บาท</strong></div>
+            <div class="order-total"><span>ยอดรวมคำสั่งซื้อ</span><strong><%= Number(order.total_amount || order.amount || 0).toLocaleString('th-TH') %> บาท</strong></div>
+          <% } else { %>
+            <p class="no-products">ยังไม่มีรายละเอียดสินค้าในคำสั่งซื้อนี้</p>
+          <% } %>
+        </section>
+
+        <% if (role === 'florist') { %>
+          <section class="status-section">
+            <h2>อัปเดตสถานะการจัด</h2>
+            <% if (order.order_status === 'กำลังจัดช่อ' || order.order_status === 'จัดเสร็จแล้ว') { %>
+              <% const assignedFlorist = floristEmployees.find((employee) => employee.emp_ID === order.emp_ID); %>
+              <p class="assigned-florist">ผู้จัดดอกไม้: <strong>
+                <%= assignedFlorist ? `${assignedFlorist.emp_firstname} ${assignedFlorist.emp_lastname} (${assignedFlorist.emp_ID})` : (order.emp_ID || 'ยังไม่ได้ระบุ') %>
+                </strong>
+                </p>
+            <% } %>
+            <% if (order.order_status === 'รอจัด') { %>
+              <form class="status-actions florist-assignment-form" method="post" action="/employee/florist/orders/<%= encodeURIComponent(order.order_ID) %>/status">
+                <input type="hidden" name="role" value="florist">
+                <input type="hidden" name="status" value="กำลังจัดช่อ">
+                <label for="florist-<%= order.order_ID %>">เลือกพนักงานผู้จัด</label>
+                <select id="florist-<%= order.order_ID %>" name="emp_ID" required>
+                  <option value="">เลือกพนักงานจัดดอกไม้</option>
+                  <% floristEmployees.forEach((employee) => { %>
+                    <option value="<%= employee.emp_ID %>"><%= employee.emp_firstname %> <%= employee.emp_lastname %> (<%= employee.emp_ID %>)</option>
+                  <% }) %>
+                </select>
+                <button type="submit" class="status-button start-button" <%= floristEmployees.length ? '' : 'disabled' %>>เริ่มจัดดอกไม้</button>
+              </form>
+            <% } else { %>
+              <form class="status-actions" method="post" action="/employee/florist/orders/<%= encodeURIComponent(order.order_ID) %>/status">
+                <input type="hidden" name="role" value="florist">
+                <button
+                  type="submit"
+                  name="status"
+                  value="จัดเสร็จแล้ว"
+                  class="status-button done-button"
+                  <%= order.order_status !== 'กำลังจัดช่อ' ? 'disabled' : '' %>>
+                  จัดเสร็จแล้ว
+                </button>
+              </form>
+            <% } %>
+          </section>
+        <% } else { %>
+          <section class="status-section">
+            <h2>อัปเดตสถานะรับสินค้า</h2>
+            <form class="status-actions" method="post" action="/employee/counter/orders/<%= encodeURIComponent(order.order_ID) %>/status">
+            <% if (order.fulfillment_type === 'จัดส่ง') { %>
+            <button
+              type="submit"
+              name="status"
+              value="กำลังจัดส่ง"
+              class="status-button start-button"
+              <%= order.order_status !== 'จัดเสร็จแล้ว' ? 'disabled' : '' %>>
+              กำลังจัดส่ง
+            </button>
+            <button
+              type="submit"
+              name="status"
+              value="เสร็จสิ้น"
+              class="status-button done-button"
+              <%= order.order_status !== 'กำลังจัดส่ง' ? 'disabled' : '' %>>
+              ส่งมอบเรียบร้อย
+            </button>
+            <% } else { %>
+            <button
+              type="submit"
+              name="status"
+              value="เสร็จสิ้น"
+              class="status-button done-button"
+              <%= order.order_status !== 'จัดเสร็จแล้ว' ? 'disabled' : '' %>>
+              ลูกค้ารับสินค้าแล้ว
+            </button>
+            <% } %>
+            </form>
+            </section>
+        <% } %>
+      </article>
+    </main>
+  </body>
+</html>

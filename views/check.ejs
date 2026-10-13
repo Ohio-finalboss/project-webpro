@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ตรวจสอบข้อมูลคำสั่งซื้อ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FFF8E7;
+      --card: #f9d7da;
+      --pink-title: #e0728c;
+      --pink-deep: #c2476a;
+      --line: #eebcc4;
+      --green: #718b54;
+      --text: #2b1d12;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Prompt', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .container { max-width: 640px; margin: 0 auto; padding: 28px 20px 48px; }
+    h1 { font-size: 28px; font-weight: 600; margin: 8px 0 18px; }
+
+    .card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 22px 24px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, .04);
+    }
+    .card-title {
+      color: var(--pink-title);
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0 0 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+    }
+    .info p { margin: 8px 0; font-size: 15px; word-break: break-word; }
+    .info b, .detail b { font-weight: 600; }
+
+    /* รายการสินค้า */
+    .order-item { padding: 14px 0; border-bottom: 1px solid var(--line); }
+    .order-item:first-of-type { padding-top: 4px; }
+    .order-head { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; }
+    .order-name { font-size: 17px; font-weight: 600; margin: 0; }
+    .order-price { color: var(--pink-title); font-weight: 600; font-size: 17px; white-space: nowrap; }
+    .detail { font-size: 13.5px; margin: 6px 0 0; line-height: 1.55; color: #3d2f22; }
+    .detail div { margin-top: 3px; }
+
+    .total {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 18px; padding-top: 4px;
+      color: var(--pink-deep);
+      font-weight: 600;
+    }
+    .total .label { font-size: 19px; }
+    .total .value { font-size: 24px; }
+    .fee-row { display: flex; justify-content: space-between; font-size: 14px; margin-top: 12px; color: #6d4a52; }
+
+    .buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px; }
+    .btn {
+      display: block; text-align: center; text-decoration: none; cursor: pointer;
+      padding: 15px; border-radius: 12px;
+      font-family: inherit; font-size: 16px; font-weight: 600;
+    }
+    .btn-edit { background: #fff; border: 1px solid #c9c2bb; color: #7a7068; }
+    .btn-confirm { background: var(--green); border: 1px solid var(--green); color: #fff; width: 100%; }
+    .btn:hover { filter: brightness(.96); }
+    form { margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>ตรวจสอบข้อมูลคำสั่งซื้อ</h1>
+
+    <!-- ===== ข้อมูลติดต่อและจัดส่ง ===== -->
+    <section class="card info">
+      <h2 class="card-title">ข้อมูลติดต่อและจัดส่ง</h2>
+      <p><b>ชื่อผู้สั่งซื้อ :</b> <%= info.customerName %></p>
+      <p><b>เบอร์โทรศัพท์ :</b> <%= info.phone %></p>
+      <p><b>รูปแบบการรับ :</b> <%= fulfillmentLabel %></p>
+      <% if (info.fulfillment === 'delivery') { %>
+        <p><b>ชื่อผู้รับ :</b> <%= info.recipientName %></p>
+        <p><b>ที่อยู่จัดส่ง :</b> <%= info.address %></p>
+      <% } %>
+      <p><b>วัน - เวลาที่นัดรับ :</b> <%= info.date %> เวลา <%= info.time %></p>
+    </section>
+
+    <!-- ===== รายละเอียดรายการสินค้า ===== -->
+    <section class="card">
+      <h2 class="card-title">รายละเอียดรายการสินค้า</h2>
+
+      <% items.forEach(function (it, idx) { %>
+        <div class="order-item">
+          <div class="order-head">
+            <h3 class="order-name">
+              รายการที่ <%= idx + 1 %> : <%= it.bouquet_name %> (ขนาด <%= it.size %>)
+              <% if (it.quantity > 1) { %> × <%= it.quantity %><% } %>
+            </h3>
+            <span class="order-price"><%= money0((Number(it.price_per_unit) + Number(it.service_fee || 0)) * it.quantity) %> บาท</span>
+          </div>
+
+          <div class="detail">
+            <div>
+              <b>องค์ประกอบช่อ :</b><br>
+              <% if (it.components.length === 0) { %>
+                -
+              <% } else { %>
+                <%= it.components.map(function (c) { return c.item_name + ' (x' + c.quantity + ')'; }).join(', ') %>
+              <% } %>
+            </div>
+            <div><b>ข้อความบนการ์ด :</b> <%= it.card_message ? it.card_message : '-' %></div>
+            <div><b>หมายเหตุ :</b> <%= it.note_text ? it.note_text : '-' %></div>
+          </div>
+        </div>
+      <% }); %>
+
+      <% if (summary.deliveryFee > 0) { %>
+        <div class="fee-row"><span>ค่าจัดส่ง</span><span><%= money0(summary.deliveryFee) %> บาท</span></div>
+      <% } %>
+
+      <div class="total">
+        <span class="label">ยอดเงินชำระเงิน :</span>
+        <span class="value"><%= money0(summary.total) %> บาท</span>
+      </div>
+    </section>
+
+    <!-- ===== ปุ่ม ===== -->
+    <div class="buttons">
+      <a class="btn btn-edit" href="/inform">แก้ไขข้อมูล</a>
+      <form method="POST" action="/check/confirm">
+        <button type="submit" class="btn btn-confirm">ยืนยันคำสั่งซื้อ</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><%= viewMode === 'progress' ? 'ออเดอร์ที่รอจัดและกำลังจัด' : 'คำสั่งซื้อทั้งหมด' %> · ระบบพนักงานหน้าร้าน</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/order-pages.css">
+    <script src="/table-pagination.js" defer></script>
+    <script src="/live-updates.js" defer></script>
+  <%- include('partials/fonts') %>
+</head>
+  <body class="order-page">
+    <header class="order-nav">
+      <a class="back-link" href="/employee/<%= role %>">← <span>กลับหน้าหลัก</span></a>
+      <strong><%= viewMode === 'progress' ? 'รายการอัปเดตสถานะ' : 'รายการคำสั่งซื้อทั้งหมด' %></strong>
+      <span class="nav-spacer"></span>
+    </header>
+    <main class="queue-main" data-live-region="employee-queue">
+      <div class="queue-heading">
+        <div>
+          <h1>
+          <%= viewMode === 'progress' ? 'ออเดอร์ที่รอจัดและกำลังจัดช่อ' : 'คำสั่งซื้อทั้งหมด' %>
+          </h1>
+          <p>
+          <%= viewMode === 'progress' ? 'เรียงตามเวลาสั่งจากออเดอร์เก่าสุดไปใหม่สุด' : 'แสดงทุกออเดอร์และเรียงจากรายการที่รับเข้ามาก่อน' %>
+          </p>
+          </div>
+        <span class="queue-count"><%= orders.length %> รายการ</span>
+      </div>
+      <section class="queue-card" aria-label="ตารางคำสั่งซื้อทั้งหมด">
+        <% if (orders.length) { %>
+          <div class="table-scroll">
+            <table class="queue-table">
+            <thead>
+            <tr>
+            <th>เลขที่ออเดอร์</th>
+            <th>ลูกค้า</th>
+            <th>เวลาที่สั่ง</th>
+            <th>วันรับสินค้า</th>
+            <th>การชำระเงิน</th>
+            <th>สถานะออเดอร์</th>
+            <th>
+            </th>
+            </tr>
+            </thead>
+            <tbody>
+            <% orders.forEach((order) => { %>
+                <tr
+                  class="clickable-row"
+                  data-href="/employee/<%= role %>/orders/<%= encodeURIComponent(order.order_ID) %>"
+                  tabindex="0"
+                  aria-label="เปิดรายละเอียดคำสั่งซื้อ <%= order.order_ID %>">
+                <td class="queue-order-id"><%= order.order_ID %></td>
+                <td><%= order.customer_name %><small><%= order.customer_phone_number %></small></td>
+                <td><%= order.order_date %></td>
+                <td><%= order.pickup_deliv_date %></td>
+                <td>
+                  <span class="queue-status <%= order.payment_status === 'ชำระแล้ว' ? 'payment-paid' : 'payment-pending' %>">
+                  <%= order.payment_status || 'ไม่มีข้อมูลชำระ' %>
+                  </span>
+                  </td>
+                <td><%- include('partials/order-status', { status: order.order_status, extraClass: 'queue-status' }) %></td>
+                <td class="queue-open">ดูรายละเอียด →</td>
+              </tr>
+            <% }) %>
+          </tbody></table></div>
+        <% } else { %>
+          <div class="queue-empty">
+            <h2>
+            <%= viewMode === 'progress' ? 'ไม่มีออเดอร์ที่รอจัดหรือกำลังจัด' : 'ยังไม่มีคำสั่งซื้อ' %>
+            </h2>
+            <p>
+            <%= viewMode === 'progress' ? 'เมื่อมีออเดอร์ที่ชำระแล้วและอยู่ระหว่างจัด รายการจะแสดงที่นี่' : 'รายการออเดอร์จากลูกค้าจะแสดงที่นี่' %>
+            </p>
+            </div>
+        <% } %>
+      </section>
+    </main>
+    <script>
+      document.addEventListener('click', (event) => {
+        const row = event.target.closest('.clickable-row');
+        if (row) window.location.assign(row.dataset.href);
+      });
+      document.addEventListener('keydown', (event) => {
+        const row = event.target.closest('.clickable-row');
+        if (row && (event.key === 'Enter' || event.key === ' ')) {
+          event.preventDefault();
+          window.location.assign(row.dataset.href);
+        }
+      });
+    </script>
+  </body>
+</html>

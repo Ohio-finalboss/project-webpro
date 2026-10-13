@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ชำระเงิน - <%= shopName %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="/live-updates.js" defer></script>
+  <style>
+    :root {
+      --bg: #FFF8E7;
+      --card: #f9d7da;
+      --pink-title: #e0728c;
+      --pink-deep: #c2476a;
+      --line: #eebcc4;
+      --green: #718b54;
+      --text: #2b1d12;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Prompt', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .container { 
+      max-width: 500px; 
+      margin: 0 auto; 
+      padding: 32px 20px 48px; 
+    }
+    h1 { 
+      font-size: 26px; 
+      font-weight: 600; 
+      margin: 8px 0 20px; 
+      text-align: center;
+      color: var(--pink-deep);
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, .04);
+      text-align: center;
+    }
+
+    .shop-name {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--pink-deep);
+      margin-bottom: 6px;
+    }
+
+    .order-ref {
+      font-size: 14px;
+      color: #6d4a52;
+      margin-bottom: 18px;
+    }
+
+    .amount-box {
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .amount-label {
+      font-size: 14px;
+      color: #7a7068;
+    }
+
+    .amount-value {
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--pink-deep);
+      margin-top: 4px;
+    }
+
+    .qr-box {
+      background: #ffffff;
+      border: 2px dashed var(--pink-title);
+      border-radius: 16px;
+      padding: 16px;
+      display: inline-block;
+      margin-bottom: 16px;
+    }
+
+    .qr-image {
+      width: 220px;
+      height: 220px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .qr-warning {
+      margin: 12px 0 0;
+      color: #a33242;
+      font-weight: 600;
+    }
+
+    .instruction {
+      font-size: 14px;
+      color: #55433a;
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    .btn-confirm {
+      display: block;
+      width: 100%;
+      background: var(--green);
+      border: 1px solid var(--green);
+      color: #fff;
+      padding: 15px;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: filter 0.2s ease;
+    }
+
+    .btn-confirm:hover {
+      filter: brightness(.94);
+    }
+
+    .btn-cancel {
+      display: block;
+      width: 100%;
+      margin-top: 12px;
+      background: #fff;
+      border: 1px solid #b74755;
+      color: #a33242;
+      padding: 13px;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    form { margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="container" data-live-region="customer-payment">
+    <h1>ชำระเงิน</h1>
+
+    <div class="card">
+      <!-- ชื่อร้านค้า -->
+      <div class="shop-name">🌸 <%= shopName %></div>
+      <div class="order-ref">หมายเลขคำสั่งซื้อ: <b><%= order.order_ID %></b> (คุณ<%= order.customer_name %>)</div>
+
+      <div class="instruction"><strong>ช่องทางชำระเงิน:</strong> <%= order.payment_method || 'QR Payment' %></div>
+
+      <!-- ยอดชำระเงิน -->
+      <div class="amount-box">
+        <div class="amount-label">ยอดเงินที่ต้องชำระ</div>
+        <div class="amount-value"><%= money0(order.total_amount) %> บาท</div>
+      </div>
+
+      <div class="qr-box">
+        <img class="qr-image" src="/src/QR_code.png" alt="QR code ตัวอย่างสำหรับแสดงหน้าชำระเงิน">
+        <p class="instruction qr-warning">หมายเหตุ: QR นี้เป็นเพียงภาพตัวอย่าง ไม่สามารถใช้ชำระเงินจริง</p>
+      </div>
+
+      <p class="instruction">
+        หลังชำระผ่าน QR Payment แล้ว กดปุ่มด้านล่างเพื่อแจ้งพนักงานเคาน์เตอร์<br>
+        ใบเสร็จจะออกหลังพนักงานตรวจสอบและยืนยันการชำระเงิน
+      </p>
+    </div>
+
+    <!-- ปุ่มยืนยันการชำระเงิน -->
+    <form method="POST" action="/payment/confirm/<%= order.order_ID %>">
+      <button type="submit" class="btn-confirm">ยืนยันการชำระเงิน</button>
+    </form>
+    <form method="POST" action="/payment/cancel/<%= order.order_ID %>" onsubmit="return confirm('ยืนยันยกเลิกคำสั่งซื้อนี้หรือไม่? ข้อมูลคำสั่งซื้อจะยังถูกเก็บไว้');">
+      <button type="submit" class="btn-cancel">ยกเลิกคำสั่งซื้อ</button>
+    </form>
+  </div>
+</body>
+</html>

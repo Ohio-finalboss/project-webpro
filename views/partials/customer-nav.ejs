@@ -1,0 +1,10 @@
+<header class="customer-nav">
+  <nav class="customer-nav-left" aria-label="เมนูหลัก">
+    <a class="customer-nav-pill customer-nav-home" href="/" <% if (active === 'home') { %>aria-current="page"<% } %>>Home</a>
+    <a class="customer-nav-pill customer-nav-order" href="/shop" <% if (active === 'order') { %>aria-current="page"<% } %>>สั่งช่อดอกไม้</a>
+  </nav>
+  <nav class="customer-nav-right" aria-label="เมนูลูกค้า">
+    <a class="customer-nav-status" href="/check-order-status" <% if (active === 'status') { %>aria-current="page"<% } %>>ตรวจสอบสถานะคำสั่งซื้อ</a>
+    <a class="customer-nav-cart" href="/cart" <% if (active === 'cart') { %>aria-current="page"<% } %>>ตะกร้าสินค้า</a>
+  </nav>
+</header>

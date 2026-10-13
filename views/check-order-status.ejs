@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ตรวจสอบสถานะคำสั่งซื้อ | Flower Shop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/customer-nav.css">
+  <script src="/live-updates.js" defer></script>
+</head>
+<body>
+  <%- include('partials/customer-nav', { active: 'status' }) %>
+  <main class="container" data-live-region="customer-order-status">
+
+    <!-- ส่วนที่ 1: กรอกหมายเลขคำสั่งซื้อ -->
+    <section class="card search">
+      <p class="eyebrow">🌷 Flower Shop</p>
+      <h1>ตรวจสอบสถานะคำสั่งซื้อ</h1>
+      <p class="hint">กรอกหมายเลขคำสั่งซื้อจากใบเสร็จของคุณ</p>
+      <form action="/check-order-status" method="get" class="search-form">
+        <input type="text" name="order_id" value="<%= query %>" maxlength="30"
+               placeholder="ORD-YYMMDD-xxxxxxxx" autocomplete="off" required>
+        <button type="submit">ตรวจสอบ</button>
+      </form>
+    </section>
+
+    <!-- ส่วนที่ 2: แสดงผล (แสดงหลังจากกดส่งหมายเลขแล้วเท่านั้น) -->
+    <% if (searched) { %>
+      <% if (error) { %>
+        <section class="card result error">
+          <p class="error-icon">🥀</p>
+          <p><%= error %></p>
+        </section>
+      <% } else { %>
+        <section class="card result">
+          <div class="result-head">
+            <div>
+              <p class="label">หมายเลขคำสั่งซื้อ</p>
+              <h2><%= order.order_ID %></h2>
+            </div>
+            <span class="badge <%= status.tone %>"><%= order.order_status %></span>
+          </div>
+
+          <% if (status.cancelled) { %>
+            <p class="note-cancel">คำสั่งซื้อนี้ถูกยกเลิกแล้ว</p>
+          <% } else if (status.index >= 0) { %>
+            <ol class="steps">
+              <% steps.forEach(function (s, i) { %>
+                <li class="<%= i < status.index ? 'passed' : (i === status.index ? 'current' : '') %>">
+                  <span class="dot"><%= i < status.index ? '✓' : i + 1 %></span>
+                  <span class="step-name"><%= s %></span>
+                </li>
+              <% }) %>
+            </ol>
+          <% } %>
+
+          <dl class="details">
+            <div><dt>วันที่สั่งซื้อ</dt><dd><%= formatDate(order.order_date) %></dd></div>
+            <div><dt>วันที่รับ/จัดส่ง</dt><dd><%= formatDate(order.pickup_deliv_date) %></dd></div>
+            <div><dt>รูปแบบการรับสินค้า</dt><dd><%= order.fulfillment_type || '-' %></dd></div>
+            <div><dt>ชื่อลูกค้า</dt><dd><%= order.customer_name || '-' %></dd></div>
+            <div><dt>เบอร์โทรศัพท์ลูกค้า</dt><dd><%= order.customer_phone_number || '-' %></dd></div>
+            <div><dt>ชื่อผู้รับ</dt><dd><%= order.recipient_name || '-' %></dd></div>
+            <div class="wide"><dt>ที่อยู่จัดส่ง</dt><dd><%= order.delivery_address || '-' %></dd></div>
+            <div><dt>รหัสพนักงานผู้รับผิดชอบ</dt><dd><%= order.emp_ID || 'ยังไม่ได้มอบหมาย' %></dd></div>
+          </dl>
+        </section>
+      <% } %>
+    <% } %>
+
+  </main>
+</body>
+</html>

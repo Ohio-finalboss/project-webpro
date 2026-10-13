@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="th">
+  <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ไม่พบคำสั่งซื้อ</title>
+    <link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/order-pages.css"><%- include('partials/fonts') %>
+</head>
+  <body class="order-page">
+    <header class="order-nav">
+      <a class="back-link" href="<%= role === 'counter' ? '/employee/counter/orders' : '/employee/florist/orders' %>">← <span>กลับรายการคำสั่งซื้อ</span>
+      </a>
+      <span class="nav-spacer"></span>
+    </header>
+      <main class="queue-main">
+        <section class="queue-card queue-empty">
+          <h2>ไม่พบคำสั่งซื้อ</h2><p>รายการนี้อาจถูกลบหรือไม่มีอยู่ในระบบ</p>
+        </section>
+      </main>
+  </body>
+</html>

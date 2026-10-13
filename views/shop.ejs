@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>สั่งทำช่อดอกไม้</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FFF8E7;
+      --pink-bar: #fbe1e7;
+      --pink-border: #efb7c4;
+      --pink-text: #b34868;
+      --pink-deep: #ec91a9;
+      --green: #718b54;
+      --gray-btn: #e4d8d4;
+      --text: #2b1d12;
+      --muted: #8a7a68;
+      --line: #ecdfc6;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Prompt', sans-serif; background: var(--bg); color: var(--text); }
+    button { font-family: inherit; color: inherit; cursor: pointer; }
+    :focus-visible { outline: 3px solid var(--pink-text); outline-offset: 2px; }
+
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 18px; padding: 14px 24px; }
+    .topbar-title { display: flex; align-items: center; gap: 16px; min-width: 0; }
+    .topbar h1 { font-size: 26px; font-weight: 600; margin: 0; }
+    .home-button { display: inline-flex; min-height: 52px; align-items: center; justify-content: center; flex: none;
+                   padding: 10px 28px; border-radius: 999px; background: #FCC0C5; color: #6F4E37;
+                   font-size: 18px; font-weight: 500; line-height: 1.3; text-decoration: none; white-space: nowrap;
+                   transition: filter .15s ease, transform .15s ease; }
+    .home-button:hover { filter: brightness(.96); transform: translateY(-1px); }
+    .home-button:focus-visible { outline: 3px solid #6F4E37; outline-offset: 3px; }
+    .cart-link { display: inline-flex; gap: 8px; align-items: center; background: var(--green); color: #fff; text-decoration: none;
+                 padding: 10px 20px; border-radius: 999px; font-weight: 500; min-height: 44px; }
+    .cart-link b { background: #fff; color: var(--green); border-radius: 999px; padding: 0 9px; min-width: 24px; text-align: center; }
+    .topbar-links { display: flex; align-items: center; gap: 14px; }
+    .status-link {
+      color: var(--text);
+      text-decoration: none;
+      font-size: 14px;
+      border: 1px solid #6F4E37;
+      border-radius: 50px;
+      padding: 10px;
+      transition: filter .15s ease, transform .15s ease;
+    }
+    .status-link:hover {filter: brightness(.96); transform: translateY(-1px); }
+
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 22px; max-width: 1280px; margin: 0 auto; padding: 0 24px 40px; align-items: start; }
+    @media (max-width: 960px) { .layout { grid-template-columns: 1fr; padding: 0 16px 32px; } .topbar { padding: 12px 16px; } }
+    @media (max-width: 540px) {
+      .topbar { flex-wrap: wrap; gap: 10px; }
+      .topbar-title { gap: 10px; }
+      .topbar h1 { font-size: 21px; }
+      .home-button { min-height: 44px; padding: 8px 18px; font-size: 15px; }
+      .topbar-links { width: 100%; justify-content: flex-end; }
+      .status-link { font-size: 12px; }
+    }
+
+    .steps { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .step { flex: 1; min-width: 160px; display: flex; align-items: center; gap: 10px; border: 1px solid var(--pink-border);
+            background: #fff; border-radius: 999px; padding: 8px 16px; min-height: 48px; text-align: left; font-weight: 500; }
+    .step i { font-style: normal; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+              background: var(--pink-bar); color: var(--pink-text); font-weight: 600; flex: none; }
+    .step[aria-current="step"] { background: var(--pink-bar); border-color: var(--pink-text); }
+    .step[aria-current="step"] i { background: var(--pink-text); color: #fff; }
+    .step.done i { background: var(--green); color: #fff; }
+
+    .panel { background: #fff; border-radius: 20px; padding: 22px; box-shadow: 0 4px 14px rgba(0,0,0,.04); }
+    .section-title { background: var(--pink-bar); color: var(--pink-text); font-weight: 600; font-size: 17px;
+                     padding: 10px 18px; border-radius: 999px; margin: 0 0 14px; }
+    .section-title:not(:first-child) { margin-top: 26px; }
+    .hint { color: var(--muted); font-size: 14px; margin: 0 0 12px; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+    .opt { text-align: left; border: 1.5px solid var(--pink-border); background: var(--bg); border-radius: 16px; padding: 14px;
+           display: flex; flex-direction: column; gap: 4px; min-height: 84px; }
+    .opt[aria-pressed="true"] { border-color: var(--pink-text); background: var(--pink-bar); box-shadow: 0 0 0 1.5px var(--pink-text) inset; }
+    .opt b { font-weight: 600; }
+    .opt small { color: var(--muted); }
+    .opt .pr { color: var(--pink-text); font-weight: 600; }
+
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .chip { border: 1.5px solid var(--pink-border); background: #fff; border-radius: 999px; padding: 8px 16px; min-height: 44px; font-weight: 500; }
+    .chip[aria-pressed="true"] { background: var(--pink-text); border-color: var(--pink-text); color: #fff; }
+
+    .fcard { border: 1.5px solid var(--pink-border); border-radius: 16px; background: var(--bg); padding: 12px 10px; text-align: center;
+             display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .fcard.has { background: var(--pink-bar); border-color: var(--pink-text); }
+    .fcard svg { width: 60px; height: 60px; }
+    .fcard .nm { font-weight: 500; font-size: 14px; line-height: 1.3; }
+    .fcard .meta { font-size: 12.5px; color: var(--muted); }
+    .fcard.out { opacity: .5; }
+
+    .stepper { display: inline-flex; align-items: center; gap: 4px; }
+    .stepper button {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1.5px solid var(--pink-text);
+      background: #fff;
+      font-size: 22px;
+      line-height: 1;
+      display: grid;
+      place-items: center;
+    }
+    .stepper button:disabled { opacity: .35; cursor: not-allowed; }
+    .stepper output { min-width: 34px; text-align: center; font-weight: 600; font-size: 18px; }
+
+    .meter { height: 10px; border-radius: 999px; background: var(--pink-bar); overflow: hidden; margin: 6px 0 4px; }
+    .meter i { display: block; height: 100%; background: var(--green); transition: width .2s; }
+    .meter.full i { background: var(--pink-text); }
+
+    .swatches { display: flex; flex-wrap: wrap; gap: 10px; }
+    .sw { display: flex; align-items: center; gap: 10px; border: 1.5px solid var(--pink-border); background: var(--bg);
+          border-radius: 14px; padding: 6px 14px 6px 8px; min-height: 48px; font-size: 14px; text-align: left; }
+    .sw[aria-pressed="true"] { border-color: var(--pink-text); background: var(--pink-bar); box-shadow: 0 0 0 1.5px var(--pink-text) inset; }
+    .sw .dot { width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgba(43,29,18,.3); flex: none; }
+    .sw small { color: var(--muted); display: block; line-height: 1.2; }
+    .drow { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
+
+    label.f { display: block; font-weight: 500; font-size: 15px; margin: 14px 0 6px; }
+    input[type=text], textarea { width: 100%; font-family: inherit; font-size: 15px; padding: 11px 16px; border: 1px solid var(--pink-border);
+                                 border-radius: 14px; background: #fff; color: var(--text); }
+    textarea { min-height: 84px; resize: vertical; }
+    .count { text-align: right; font-size: 13px; color: var(--muted); }
+    .cardbox { margin-top: 12px; padding: 14px 16px; border-radius: 16px; background: var(--bg); border: 1.5px dashed var(--green); }
+
+    .nav { display: flex; justify-content: space-between; gap: 14px; margin-top: 26px; }
+    .btn { border: none; padding: 14px 28px; border-radius: 999px; font-size: 16px; font-weight: 600; min-height: 50px; }
+    .btn-back { background: var(--gray-btn); }
+    .btn-next { background: var(--green); color: #fff; }
+    .btn-add { background: var(--pink-deep); color: var(--text); width: 100%; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .btn:hover:not(:disabled) { filter: brightness(.95); }
+
+    .aside { position: sticky; top: 14px; background: var(--pink-bar); border-radius: 20px; overflow: hidden; }
+    @media (max-width: 960px) { .aside { position: static; } }
+    .stage { background: #fff; margin: 12px; border-radius: 16px; }
+    .stage svg { display: block; width: 100%; height: auto; max-height: 340px; }
+    .sum { padding: 4px 20px 20px; }
+    .sum h2 { font-size: 18px; font-weight: 600; margin: 4px 0 8px; color: var(--pink-text); }
+    .sum ul { list-style: none; padding: 0; margin: 0; font-size: 14px; max-height: 190px; overflow: auto; }
+    .sum li { display: flex; justify-content: space-between; gap: 10px; padding: 4px 0; border-bottom: 1px dotted #deb2bd; }
+    .total { display: flex; justify-content: space-between; align-items: baseline; margin: 12px 0 10px; font-weight: 600; }
+    .total b { font-size: 26px; }
+    .qtyrow { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .msg { font-size: 13.5px; color: #a1281b; margin: 8px 0 0; min-height: 1.2em; }
+    .toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); background: var(--text); color: #fff; padding: 12px 20px;
+             border-radius: 999px; opacity: 0; pointer-events: none; transition: .25s; z-index: 20; max-width: 92vw; text-align: center; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-title">
+      <a class="home-button" href="/">Home</a>
+      <h1 id="pageTitle">สั่งทำช่อดอกไม้</h1>
+    </div>
+    <nav class="topbar-links" aria-label="เมนูลูกค้า">
+      <a class="status-link" href="/check-order-status">ตรวจสอบสถานะคำสั่งซื้อ</a>
+      <a class="cart-link" href="/cart">ตะกร้า <b>
+      <%= cartCount %>
+      </b>
+      </a>
+      </nav>
+  </header>
+
+  <div class="layout">
+    <main>
+      <nav class="steps" id="steps" aria-label="ขั้นตอนการสั่งทำ"></nav>
+      <section class="panel" id="panel"></section>
+    </main>
+    <aside class="aside" aria-label="สรุปช่อดอกไม้">
+      <div class="stage" id="stage"></div>
+      <div class="sum" id="sum"></div>
+    </aside>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script id="boot" type="application/json"><%- JSON.stringify(boot).replace(/</g, '\\u003c') %></script>
+  <script>
+  (function () {
+    var BOOT = JSON.parse(document.getElementById('boot').textContent);
+    var items = BOOT.items, templates = BOOT.templates, maxStems = BOOT.maxStems, paperQty = BOOT.paperQty,
+        serviceFees = BOOT.serviceFees || { S: 100, M: 200, L: 350 },
+        decorMax = BOOT.decorMax, maxQty = BOOT.maxQty, editId = BOOT.editId;
+    var byId = {}; items.forEach(function (i) { byId[i.id] = i; });
+    var DECOR_TYPES = ['ริบบิ้น', 'โบว์', 'ผีเสื้อ'];
+    var SIZE_LABEL = { S: 'ช่อเล็ก', M: 'ช่อกลาง', L: 'ช่อใหญ่' };
+
+    var S = BOOT.initial || { size: 'M', base: null, flowers: {}, paper: null, decor: {}, card: null, cardMsg: '', name: '', note: '', qty: 1 };
+    var step = 1, flowerFilter = 'ทั้งหมด', tplFilter = 'ทั้งหมด', busy = false;
+    if (editId) document.getElementById('pageTitle').textContent = 'แก้ไขช่อดอกไม้';
+
+    function $(s) { return document.querySelector(s); }
+    function money(n) { return Number(n).toLocaleString('th-TH') + ' บาท'; }
+    function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+    var tt;
+    function toast(m) {
+      var t = $('#toast');
+      t.textContent = m;
+      t.classList.add('show');
+      clearTimeout(tt);
+      tt = setTimeout(function () { t.classList.remove('show'); }, 2600);
+    }
+
+    /* สีจากชื่อสินค้า (ชื่อใน DB มีสีต่อท้าย) */
+    var COLORS = [['หนังสือพิมพ์', '#CFC7B8'], ['เงินรุ้ง', '#CDD6E8'], ['เงิน', '#C5C9CF'], ['ทอง', '#D4AF37'], ['น้ำตาล', '#A8794F'],
+      ['ขาว', '#F6F1EA'], ['ครีม', '#F3E3BE'], ['ฟ้า', '#9CC3E6'], ['ชมพู', '#EE9BB4'], ['ม่วง', '#A98BC9'], ['แดง', '#C23A4A'],
+      ['ดำ', '#3A2D2A'], ['เทา', '#A8A3A3'], ['เหลือง', '#F2C94C']];
+    function colorOf(name) { for (var i = 0; i < COLORS.length; i++) if (name.indexOf(COLORS[i][0]) > -1) return COLORS[i][1]; return '#F2C14E'; }
+    function shade(hex, k) { var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+      function f(c) { return Math.max(0, Math.min(255, Math.round(c * k))); } return '#' + ((1 << 24) + (f(r) << 16) + (f(g) << 8) + f(b)).toString(16).slice(1); }
+    function shortType(t) { return t.replace(/^ดอก/, ''); }
+
+    /* ---------- คำนวณ ---------- */
+    function stems() { var n = 0; for (var k in S.flowers) n += S.flowers[k]; return n; }
+    function lines() {
+      var out = [];
+      Object.keys(S.flowers).forEach(function (id) { out.push({ id: id, qty: S.flowers[id] }); });
+      if (S.paper) out.push({ id: S.paper, qty: paperQty[S.size] });
+      DECOR_TYPES.forEach(function (t) { var d = S.decor[t]; if (d) out.push({ id: d.id, qty: d.qty }); });
+      if (S.card) out.push({ id: S.card, qty: 1 });
+      return out;
+    }
+    function unit() { return lines().reduce(function (a, l) { return a + byId[l.id].price * l.qty; }, 0); }
+    function tplFor(base, size) { return templates.filter(function (t) { return t.base === base && t.size === size; })[0]; }
+    function missing() {
+      if (!stems()) return 'เลือกดอกไม้อย่างน้อย 1 ก้าน';
+      if (!S.paper) return 'เลือกกระดาษห่อ 1 แบบ';
+      return '';
+    }
+
+    function applyTemplate(t) {
+      S.flowers = {}; S.paper = null; S.decor = {}; S.card = null;
+      Object.keys(t.items).forEach(function (id) {
+        var it = byId[id], q = t.items[id]; if (!it) return;
+        if (it.kind === 'flower') S.flowers[id] = q;
+        else if (it.kind === 'paper') S.paper = id;
+        else if (it.kind === 'card') S.card = id;
+        else S.decor[it.type] = { id: id, qty: q };
+      });
+    }
+
+    /* ---------- วาดดอกไม้ ---------- */
+    var SHAPE = { 'ดอกกุหลาบ': 'rose', 'ดอกไลเซนทัส': 'rose', 'ดอกลิลลี่': 'lily', 'ดอกคาลล่าลิลลี่': 'calla', 'ดอกทานตะวัน': 'sunflower',
+      'ดอกเยอบีร่า': 'daisy', 'ดอกทิวลิป': 'tulip', 'ดอกไฮเดรนเยีย': 'hydra', 'ดอกยิปโซ': 'filler', 'ดอกสแตติส': 'filler', 'ดอกคัตเตอร์': 'filler' };
+    var K = 'rgba(43,29,18,.35)';
+    function petals(n, rx, ry, off, fill, x, y) {
+      var o = '';
+      for (var i = 0; i < n; i++) {
+        o += '<ellipse cx="' + x + '" cy="' + (y - off) + '" rx="' + rx + '" ry="' + ry +
+          '" transform="rotate(' + (i * 360 / n) + ' ' + x + ' ' + y + ')" fill="' + fill +
+          '" stroke="' + K + '" stroke-width=".8"/>';
+      }
+      return o;
+    }
+    function flower(it, x, y, s) {
+      var c = colorOf(it.name), d = shade(c, .75), sh = SHAPE[it.type] || 'rose';
+      switch (sh) {
+        case 'rose': return '<circle cx="' + x + '" cy="' + y + '" r="' + s + '" fill="' + c + '" stroke="' + K + '"/>' +
+          '<circle cx="' + x + '" cy="' + y + '" r="' + (s * .66) + '" fill="' + d + '" fill-opacity=".35"/>' +
+          '<circle cx="' + x + '" cy="' + y + '" r="' + (s * .4) + '" fill="' + c + '" stroke="' + d + '" stroke-width="1.2"/>';
+        case 'sunflower': return petals(12, s * .2, s * .42, s * .62, '#F2C14E', x, y) + '<circle cx="' + x + '" cy="' + y + '" r="' + (s * .42) + '" fill="#5B3A1E"/>';
+        case 'daisy': return petals(10, s * .15, s * .4, s * .55, c, x, y) + '<circle cx="' + x + '" cy="' + y + '" r="' + (s * .24) + '" fill="' + d + '"/>';
+        case 'lily': return petals(6, s * .24, s * .62, s * .5, c, x, y) + '<circle cx="' + x + '" cy="' + y + '" r="' + (s * .12) + '" fill="#E0A14E"/>';
+        case 'calla': return '<path d="M' +
+          (x - s * .7) + ' ' + (y - s * .5) +
+          ' Q' + (x - s * .6) + ' ' + (y + s * .8) + ' ' + x + ' ' + (y + s * .8) +
+          ' Q' + (x + s * .6) + ' ' + (y + s * .8) + ' ' + (x + s * .7) + ' ' + (y - s * .5) +
+          ' Q' + x + ' ' + (y - s * .1) + ' ' + (x - s * .7) + ' ' + (y - s * .5) +
+          'Z" fill="' + c + '" stroke="' + K + '"/>' +
+          '<line x1="' + x + '" y1="' + (y - s * .2) + '" x2="' + x + '" y2="' + (y + s * .35) + '" stroke="#E0A14E" stroke-width="3" stroke-linecap="round"/>';
+        case 'tulip': return '<path d="M' +
+          (x - s * .7) + ' ' + (y - s * .1) +
+          ' Q' + (x - s * .75) + ' ' + (y + s * .85) + ' ' + x + ' ' + (y + s * .85) +
+          ' Q' + (x + s * .75) + ' ' + (y + s * .85) + ' ' + (x + s * .7) + ' ' + (y - s * .1) +
+          ' L' + (x + s * .38) + ' ' + (y - s * .95) + ' L' + x + ' ' + (y - s * .3) +
+          ' L' + (x - s * .38) + ' ' + (y - s * .95) +
+          'Z" fill="' + c + '" stroke="' + K + '"/>';
+        case 'hydra': {
+          var p = [[0, 0], [.55, -.2], [-.55, -.2], [.3, .5], [-.3, .5], [.25, -.6], [-.25, -.6]];
+          var o = '';
+          p.forEach(function (q) {
+            o += '<circle cx="' + (x + q[0] * s) + '" cy="' + (y + q[1] * s) +
+              '" r="' + (s * .42) + '" fill="' + c + '" stroke="' + K + '" stroke-width=".8"/>';
+          });
+          return o;
+        }
+        default: {
+          var f = [[0, 0], [.5, -.3], [-.5, -.25], [.25, .45], [-.35, .4]];
+          var o2 = '';
+          f.forEach(function (q) {
+            o2 += '<circle cx="' + (x + q[0] * s * .8) + '" cy="' + (y + q[1] * s * .8) +
+              '" r="' + (s * .28) + '" fill="' + c + '" stroke="' + K + '" stroke-width=".8"/>';
+          });
+          return o2;
+        }
+      }
+    }
+    function thumb(it) { return '<svg viewBox="0 0 64 64" aria-hidden="true">' + flower(it, 32, 32, SHAPE[it.type] === 'filler' ? 22 : 19) + '</svg>'; }
+
+    function bouquetSVG() {
+      var list = [], paper = S.paper ? byId[S.paper] : null;
+      var main = [], fill = [];
+      Object.keys(S.flowers).forEach(function (id) { var it = byId[id]; for (var i = 0; i < S.flowers[id]; i++) (SHAPE[it.type] === 'filler' ? fill : main).push(it); });
+      list = main.concat(fill);
+      var n = list.length, k = Math.max(.55, 1.15 - n / 55);
+      var pc = paper ? colorOf(paper.name) : '#E4D8D4';
+      var s = '<svg viewBox="0 0 400 430" role="img" aria-label="ภาพตัวอย่างช่อดอกไม้">';
+      s += '<path d="M92 175 Q200 140 308 175 L232 412 L168 412 Z" fill="' + shade(pc, .85) + '" stroke="' + K + '"/>';
+      var pts = list.map(function (it, i) {
+        var r = 21 * k * Math.sqrt(i) * 1.05;
+        var a = i * 2.39996;
+        return {
+          it: it,
+          x: 200 + r * Math.cos(a) * 1.15,
+          y: 150 + r * Math.sin(a) * .85
+        };
+      });
+      pts.forEach(function (p) {
+        s += '<line x1="' + p.x + '" y1="' + (p.y + 8) +
+          '" x2="' + (200 + (p.x - 200) * .12) +
+          '" y2="330" stroke="#6E7B47" stroke-width="2.4" stroke-linecap="round"/>';
+      });
+      if (!n) s += '<text x="200" y="165" text-anchor="middle" font-size="17" fill="#8a7a68" font-family="Prompt,sans-serif">เลือกดอกไม้เพื่อดูช่อของคุณ</text>';
+      pts.slice().reverse().forEach(function (p) { s += flower(p.it, p.x, p.y, (SHAPE[p.it.type] === 'filler' ? 15 : p.it.type === 'ดอกทานตะวัน' ? 28 : 23) * k); });
+      s += '<path d="M112 225 Q200 262 288 225 L230 414 L170 414 Z" fill="' + pc + '" stroke="' + K + '"/>' +
+          '<path d="M200 262 L182 414 M200 262 L218 414" stroke="rgba(43,29,18,.18)" fill="none"/>';
+      var rb = S.decor['ริบบิ้น'], bw = S.decor['โบว์'], bf = S.decor['ผีเสื้อ'];
+      if (rb) { var rc = colorOf(byId[rb.id].name); s += '<rect x="168" y="318" width="64" height="12" rx="3" fill="' + rc + '" stroke="' + K + '"/>' +
+          '<path d="M200 330 L186 384 M200 330 L214 384" stroke="' + rc + '" stroke-width="7" stroke-linecap="round"/>'; }
+      if (bw) { var bc = colorOf(byId[bw.id].name); s += '<path d="M200 322 C160 290 150 340 200 330 C250 340 240 290 200 322Z" fill="' + bc + '" stroke="' + K + '"/>' +
+          '<circle cx="200" cy="326" r="8" fill="' + shade(bc, .8) + '"/>'; }
+      if (bf) { var fc = colorOf(byId[bf.id].name), bp = [[300, 105], [98, 112], [312, 190], [88, 190], [200, 62], [250, 78]];
+        for (var i = 0; i < bf.qty && i < 6; i++) s += '<g transform="translate(' + bp[i][0] + ' ' + bp[i][1] + ') rotate(' + (i % 2 ? -18 : 18) + ')">' +
+          '<ellipse cx="-9" cy="-4" rx="10" ry="7" fill="' + fc + '" stroke="#2b1d12"/>' +
+          '<ellipse cx="9" cy="-4" rx="10" ry="7" fill="' + fc + '" stroke="#2b1d12"/>' +
+          '<ellipse cx="-6" cy="6" rx="6" ry="5" fill="' + fc + '" stroke="#2b1d12"/>' +
+          '<ellipse cx="6" cy="6" rx="6" ry="5" fill="' + fc + '" stroke="#2b1d12"/>' +
+          '<line x1="0" y1="-8" x2="0" y2="10" stroke="#2b1d12" stroke-width="2"/>' +
+          '</g>'; }
+      if (S.card) { var cc = colorOf(byId[S.card].name), dark = (cc === '#3A2D2A' || cc === '#A8794F');
+        s += '<g transform="translate(276 352) rotate(10)">' +
+          '<rect x="-6" y="-4" width="72" height="52" rx="5" fill="' + cc + '" stroke="#2b1d12"/>' +
+          '<g stroke="' + (dark ? '#fff7dc' : '#8a7a68') + '" stroke-width="2" stroke-linecap="round">' +
+          '<line x1="8" y1="14" x2="52" y2="14"/>' +
+          '<line x1="8" y1="26" x2="46" y2="26"/>' +
+          '<line x1="8" y1="38" x2="34" y2="38"/>' +
+          '</g>' +
+          '</g>'; }
+      return s + '</svg>';
+    }
+
+    /* ---------- วาดหน้าจอ ---------- */
+    var STEPS = ['รูปแบบและขนาด', 'เลือกดอกไม้', 'วัสดุและของตกแต่ง'];
+    function renderSteps() {
+      $('#steps').innerHTML = STEPS.map(function (t, i) { var n = i + 1;
+        return '<button class="step' + (n < step ? ' done' : '') + '" ' + (n === step ? 'aria-current="step"' : '') + ' data-a="go" data-v="' + n + '">' +
+          '<i>' + (n < step ? '✓' : n) + '</i>' +
+          '<span>' + t + '</span>' +
+          '</button>'; }).join('');
+    }
+    function stepper(attrs, val, max, extraDisable) {
+      return '<div class="stepper">' +
+          '<button ' + attrs + ' data-d="-1" data-a="step" aria-label="ลดจำนวน"' + (val <= 0 ? ' disabled' : '') + '>−</button>' +
+          '<output>' + val + '</output>' +
+          '<button ' + attrs + ' data-d="1" data-a="step" aria-label="เพิ่มจำนวน"' + ((val >= max || extraDisable) ? ' disabled' : '') + '>+</button>' +
+          '</div>';
+    }
+    function swatch(it, on, a, v, t) {
+      return '<button class="sw" aria-pressed="' + on + '" data-a="' + a + '" data-v="' + v + '"' + (t ? ' data-t="' + esc(t) + '"' : '') + '>' +
+          '<span class="dot" style="background:' + colorOf(it.name) + '">' +
+          '</span>' +
+          '<span>' + esc(it.name) + '<small>' + it.price + ' บาท</small>' +
+          '</span>' +
+          '</button>';
+    }
+
+    function panel1() {
+      var h = '<h2 class="section-title">1. เลือกขนาดช่อ</h2>' +
+          '<div class="grid">';
+      ['S', 'M', 'L'].forEach(function (z) { h += '<button class="opt" aria-pressed="' + (S.size === z) + '" data-a="size" data-v="' + z + '">' +
+          '<b>' + SIZE_LABEL[z] + ' (' + z + ')</b>' +
+          '<small>ใส่ดอกไม้ได้ไม่เกิน ' + maxStems[z] + ' ก้าน</small>' +
+          '</button>'; });
+      h += '</div>' +
+          '<h2 class="section-title">2. เริ่มจากช่อของร้าน หรือจัดเอง</h2>' +
+          '<p class="hint">เลือกช่อของร้านแล้วปรับดอกไม้และวัสดุได้ในขั้นถัดไป</p>';
+      var cats = ['ทั้งหมด']; templates.forEach(function (t) { if (cats.indexOf(t.category) < 0) cats.push(t.category); });
+      h += '<div class="chips">' + cats.map(function (c) {
+        return '<button class="chip" aria-pressed="' + (tplFilter === c) +
+          '" data-a="tplcat" data-v="' + esc(c) + '">' + esc(c) + '</button>';
+      }).join('') + '</div>' +
+          '<div class="grid">';
+      h += '<button class="opt" aria-pressed="' + (S.base === null) + '" data-a="tpl" data-v="">' +
+          '<b>จัดเอง</b>' +
+          '<small>เริ่มจากช่อเปล่า</small>' +
+          '</button>';
+      templates.filter(function (t) { return t.size === S.size && (tplFilter === 'ทั้งหมด' || t.category === tplFilter); }).forEach(function (t) {
+        var p = Object.keys(t.items).reduce(function (a, id) { return a + (byId[id] ? byId[id].price * t.items[id] : 0); }, 0);
+        h += '<button class="opt" aria-pressed="' + (S.base === t.base) + '" data-a="tpl" data-v="' + esc(t.base) + '">' +
+          '<b>' + esc(t.base) + '</b>' +
+          '<small>' + esc(t.desc) + '</small>' +
+          '<span class="pr">' + money(p + (serviceFees[S.size] || 0)) + ' (รวมค่าจัดช่อ)</span>' +
+          '</button>'; });
+      h += '</div>' +
+          '<div class="nav">' +
+          '<span>' +
+          '</span>' +
+          '<button class="btn btn-next" data-a="go" data-v="2">ถัดไป: เลือกดอกไม้</button>' +
+          '</div>';
+      return h;
+    }
+    function panel2() {
+      var max = maxStems[S.size], n = stems();
+      var h = '<h2 class="section-title">เลือกดอกไม้สด</h2>' +
+          '<p class="hint">ช่อ' + SIZE_LABEL[S.size] + ' ใส่ได้อีก ' + (max - n) + ' ก้าน</p>' +
+          '<div class="meter' + (n >= max ? ' full' : '') + '" role="progressbar" aria-valuemin="0" aria-valuemax="' + max + '" aria-valuenow="' + n + '">' +
+          '<i style="width:' + Math.min(100, n / max * 100) + '%">' +
+          '</i>' +
+          '</div>' +
+          '<div class="count" style="text-align:left;margin-bottom:12px">เลือกแล้ว ' + n + ' / ' + max + ' ก้าน</div>';
+      var types = ['ทั้งหมด']; items.forEach(function (i) { if (i.kind === 'flower' && types.indexOf(i.type) < 0) types.push(i.type); });
+      h += '<div class="chips">' + types.map(function (t) {
+        return '<button class="chip" aria-pressed="' + (flowerFilter === t) +
+          '" data-a="fcat" data-v="' + esc(t) + '">' +
+          esc(t === 'ทั้งหมด' ? t : shortType(t)) + '</button>';
+      }).join('') + '</div>' +
+          '<div class="grid">';
+      items.filter(function (i) { return i.kind === 'flower' && (flowerFilter === 'ทั้งหมด' || i.type === flowerFilter); }).forEach(function (i) {
+        var q = S.flowers[i.id] || 0;
+        h += '<div class="fcard' + (q ? ' has' : '') + (i.stock < 1 ? ' out' : '') + '">' + thumb(i) + '<div class="nm">' + esc(i.name) + '</div>' +
+          '<div class="meta">' + i.price + ' บาท / ก้าน</div>' + stepper('data-k="f" data-v="' + i.id + '"', q, Math.min(i.stock, max), n >= max) + '</div>'; });
+      h += '</div>' +
+          '<div class="nav">' +
+          '<button class="btn btn-back" data-a="go" data-v="1">ย้อนกลับ</button>' +
+          '<button class="btn btn-next" data-a="go" data-v="3">ถัดไป: วัสดุและของตกแต่ง</button>' +
+          '</div>';
+      return h;
+    }
+    function panel3() {
+      var h = '<h2 class="section-title">กระดาษห่อ <span style="font-weight:400">(เลือก 1 แบบ · ใช้ ' + paperQty[S.size] + ' แผ่น)</span>' +
+          '</h2>' +
+          '<div class="swatches">';
+      items.filter(function (i) { return i.kind === 'paper'; }).forEach(function (i) { h += swatch(i, S.paper === i.id, 'paper', i.id); });
+      h += '</div>';
+      DECOR_TYPES.forEach(function (t) {
+        var d = S.decor[t], list = items.filter(function (i) { return i.kind === 'decor' && i.type === t; });
+        h += '<h2 class="section-title">' + t + ' <span style="font-weight:400">(ไม่บังคับ)</span>' +
+          '</h2>' +
+          '<div class="swatches">' +
+          '<button class="sw" aria-pressed="' + (!d) + '" data-a="decor" data-t="' + t + '" data-v="">ไม่เอา</button>';
+        list.forEach(function (i) { h += swatch(i, d && d.id === i.id, 'decor', i.id, t); });
+        h += '</div>';
+        if (d) h += '<div class="drow">' +
+          '<span>จำนวน' + t + '</span>' + stepper('data-k="d" data-v="' + t + '"', d.qty, Math.min(decorMax[t], byId[d.id].stock), false) + '</div>';
+      });
+      h += '<h2 class="section-title">การ์ด <span style="font-weight:400">(ไม่บังคับ)</span>' +
+          '</h2>' +
+          '<div class="swatches">' +
+          '<button class="sw" aria-pressed="' + (!S.card) + '" data-a="card" data-v="">ไม่ใส่การ์ด</button>';
+      items.filter(function (i) { return i.kind === 'card'; }).forEach(function (i) { h += swatch(i, S.card === i.id, 'card', i.id); });
+      h += '</div>';
+      if (S.card) h += '<div class="cardbox">' +
+          '<label class="f" for="msg" style="margin-top:0">ข้อความบนการ์ด</label>' +
+          '<textarea id="msg" maxlength="120" placeholder="เช่น สุขสันต์วันเกิดนะ">' + esc(S.cardMsg) + '</textarea>' +
+          '<div class="count">' +
+          '<span id="mc">' + S.cardMsg.length + '</span> / 120</div>' +
+          '</div>';
+      h += '<h2 class="section-title">รายละเอียดเพิ่มเติม</h2>' +
+          '<label class="f" for="nm" style="margin-top:0">ชื่อช่อ (ไม่บังคับ)</label>' +
+          '<input type="text" id="nm" maxlength="40" placeholder="เช่น ช่อวันเกิดแม่" value="' + esc(S.name) + '">' +
+          '<label class="f" for="note">หมายเหตุถึงพนักงานจัดช่อ</label>' +
+          '<textarea id="note" maxlength="200" placeholder="เช่น ขอเน้นดอกสีอ่อน">' + esc(S.note) + '</textarea>';
+      h += '<div class="nav">' +
+          '<button class="btn btn-back" data-a="go" data-v="2">ย้อนกลับ</button>' +
+          '<span>' +
+          '</span>' +
+          '</div>';
+      return h;
+    }
+    function renderPanel() { $('#panel').innerHTML = step === 1 ? panel1() : step === 2 ? panel2() : panel3(); }
+    function renderPreview() {
+      $('#stage').innerHTML = bouquetSVG();
+      var ls = lines().map(function (l) { var it = byId[l.id]; return '<li>' +
+          '<span>' + esc(it.name) + ' × ' + l.qty + '</span>' +
+          '<span>' + (it.price * l.qty) + '</span>' +
+          '</li>'; }).join('');
+      var u = unit(), fee = serviceFees[S.size] || 0, bouquetTotal = u + fee, m = missing();
+      $('#sum').innerHTML = '<h2>' + (editId ? 'แก้ไขช่อในตะกร้า' : 'ช่อของคุณ') + ' · ' + SIZE_LABEL[S.size] + '</h2>' +
+          '<ul>' + (ls || '<li>' +
+          '<span>ยังไม่ได้เลือกรายการ</span>' +
+          '<span>' +
+          '</span>' +
+          '</li>') + '</ul>' +
+        '<div class="total">' +
+          '<span>ค่าบริการจัดช่อ</span>' +
+          '<b>' + money(fee) + '</b>' +
+          '</div>' +
+        '<div class="total">' +
+          '<span>รวมต่อช่อ</span>' +
+          '<b>' + money(bouquetTotal) + '</b>' +
+          '</div>' +
+        '<div class="qtyrow">' +
+          '<span>จำนวนช่อ</span>' +
+          '<div class="stepper">' +
+          '<button data-a="q" data-d="-1" aria-label="ลดจำนวนช่อ"' + (S.qty <= 1 ? ' disabled' : '') + '>−</button>' +
+          '<output>' + S.qty + '</output>' +
+          '<button data-a="q" data-d="1" aria-label="เพิ่มจำนวนช่อ"' + (S.qty >= maxQty ? ' disabled' : '') + '>+</button>' +
+          '</div>' +
+          '</div>' +
+        '<button class="btn btn-add" data-a="submit"' + (m || busy ? ' disabled' : '') + '>' +
+        (editId ? 'บันทึกการแก้ไข' : 'เพิ่มสินค้า') + ' · ' + money(bouquetTotal * S.qty) + '</button>' +
+          '<p class="msg" id="msg2">' + m + '</p>';
+    }
+    function renderAll() { renderSteps(); renderPanel(); renderPreview(); }
+
+    /* ---------- events ---------- */
+    document.addEventListener('click', function (e) {
+      var el = e.target.closest('[data-a]'); if (!el || el.disabled) return;
+      var a = el.dataset.a, v = el.dataset.v;
+      if (a === 'go') { step = +v; renderAll(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+      else if (a === 'size') {
+        if (S.base) { S.size = v; var t = tplFor(S.base, v); if (t) applyTemplate(t); }
+        else if (stems() > maxStems[v]) { toast('ช่อขนาด ' + v + ' ใส่ได้ไม่เกิน ' + maxStems[v] + ' ก้าน ลดจำนวนดอกก่อนนะ'); return; }
+        else S.size = v;
+        renderAll();
+      }
+      else if (a === 'tplcat') { tplFilter = v; renderAll(); }
+      else if (a === 'tpl') {
+        if (!v) {
+          S.base = null;
+          S.flowers = {};
+          S.paper = null;
+          S.decor = {};
+          S.card = null;
+        } else {
+          S.base = v;
+          var tp = tplFor(v, S.size);
+          if (tp) applyTemplate(tp);
+          if (!S.name) S.name = v;
+        }
+        renderAll();
+      }
+      else if (a === 'fcat') { flowerFilter = v; renderAll(); }
+      else if (a === 'step') {
+        var d = +el.dataset.d, k = el.dataset.k, id = el.dataset.v;
+        if (k === 'f') {
+          var it = byId[id], nx = (S.flowers[id] || 0) + d;
+          if (nx < 0 || nx > it.stock) return;
+          if (d > 0 && stems() >= maxStems[S.size]) { toast('ช่อเต็มแล้ว เลือกขนาดใหญ่ขึ้นหรือลดดอกอื่นก่อน'); return; }
+          if (nx === 0) delete S.flowers[id]; else S.flowers[id] = nx; S.base = null;
+        } else {
+          var dd = S.decor[id]; if (!dd) return; var n2 = dd.qty + d;
+          if (n2 < 1 || n2 > Math.min(decorMax[id], byId[dd.id].stock)) return; dd.qty = n2;
+        }
+        renderAll();
+      }
+      else if (a === 'paper') { S.paper = v; S.base = null; renderAll(); }
+      else if (a === 'decor') {
+        var ty = el.dataset.t;
+        if (!v) delete S.decor[ty];
+        else S.decor[ty] = { id: v, qty: S.decor[ty] ? S.decor[ty].qty : 1 };
+        S.base = null;
+        renderAll();
+      }
+      else if (a === 'card') { S.card = v || null; if (!v) S.cardMsg = ''; S.base = null; renderAll(); }
+      else if (a === 'q') { S.qty = Math.max(1, Math.min(maxQty, S.qty + +el.dataset.d)); renderPreview(); }
+      else if (a === 'submit') submit();
+    });
+    document.addEventListener('input', function (e) {
+      if (e.target.id === 'msg') { S.cardMsg = e.target.value; $('#mc').textContent = S.cardMsg.length; }
+      else if (e.target.id === 'nm') S.name = e.target.value;
+      else if (e.target.id === 'note') S.note = e.target.value;
+    });
+
+    function submit() {
+      if (busy || missing()) return;
+      busy = true; renderPreview();
+      var tpl = S.base ? tplFor(S.base, S.size) : null;
+      fetch(editId ? '/bouquet/update/' + encodeURIComponent(editId) : '/cart/add', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ size: S.size, templateId: tpl ? tpl.id : null, items: lines(), name: S.name, cardMessage: S.cardMsg, note: S.note, qty: S.qty })
+      }).then(function (r) { return r.json(); }).then(function (j) {
+        if (j.ok) { window.location.href = j.redirect || '/cart'; return; }
+        busy = false; renderPreview(); $('#msg2').textContent = j.error || 'เกิดข้อผิดพลาด';
+      }).catch(function () { busy = false; renderPreview(); $('#msg2').textContent = 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง'; });
+    }
+
+    if (editId) step = 3;
+    renderAll();
+  })();
+  </script>
+</body>
+</html>
